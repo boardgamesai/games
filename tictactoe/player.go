@@ -74,24 +74,41 @@ func (p *Player) Run(useSandbox bool) error {
 		err = fmt.Errorf("Timeout launching player")
 	}
 
-	return err
+	if err != nil {
+		return err
+	}
+
+	// Now tell them which symbol they are. Note that we don't wait for a response.
+	// The other end reads line-by-line and will do the right thing.
+	message := MessageSetup{
+		Symbol: p.Symbol,
+	}
+	messageJSON, err := json.Marshal(&message)
+	if err != nil {
+		return err
+	}
+	_, err = io.WriteString(*p.cmdStdin, fmt.Sprintf("%s\n", messageJSON))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (p *Player) GetMove(b *Board) (Move, error) {
 	move := Move{}
 
-	message := Message{
-		Symbol: p.Symbol,
-		Board:  GetStringFromBoard(b),
+	message := MessageMove{
+		Board: GetStringFromBoard(b),
 	}
 
-	messageJson, err := json.Marshal(&message)
+	messageJSON, err := json.Marshal(&message)
 	if err != nil {
 		return move, err
 	}
 
 	// Write the state of things to the player
-	_, err = io.WriteString(*p.cmdStdin, fmt.Sprintf("%s\n", messageJson))
+	_, err = io.WriteString(*p.cmdStdin, fmt.Sprintf("%s\n", messageJSON))
 	if err != nil {
 		return move, err
 	}
@@ -99,8 +116,8 @@ func (p *Player) GetMove(b *Board) (Move, error) {
 	p.readResponseAsync()
 
 	select {
-	case moveJson := <-p.ch:
-		err = json.Unmarshal([]byte(moveJson), &move)
+	case moveJSON := <-p.ch:
+		err = json.Unmarshal([]byte(moveJSON), &move)
 	case <-time.After(time.Second * PlayerMoveTimeout):
 		err = fmt.Errorf("Timeout getting player move")
 	}

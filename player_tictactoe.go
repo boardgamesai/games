@@ -18,31 +18,53 @@ func main() {
 
 	stdin := bufio.NewReader(os.Stdin)
 
+	// First thing after startup is to wait to be told if we are X or O.
+	messageJSON, err := ReadLine(stdin)
+	if err != nil {
+		log.Fatalf("Error reading input: %s\n", err)
+	}
+	message := tictactoe.MessageSetup{}
+	err = json.Unmarshal([]byte(messageJSON), &message)
+	if err != nil {
+		log.Fatalf("Error decoding JSON: %s err: %s", messageJSON, err)
+	}
+	symbol := message.Symbol
+
 	for {
 		// Get raw JSON
-		inputStr, err := stdin.ReadString('\n')
-		if err != nil && err != io.EOF {
+		messageJSON, err = ReadLine(stdin)
+		if err != nil {
 			log.Fatalf("Error reading input: %s\n", err)
 		}
 
 		// Convert JSON to Message
-		message := tictactoe.Message{}
-		err = json.Unmarshal([]byte(inputStr), &message)
+		message := tictactoe.MessageMove{}
+		err = json.Unmarshal([]byte(messageJSON), &message)
 		if err != nil {
-			log.Fatalf("Error decoding JSON: %s err: %s", inputStr, err)
+			log.Fatalf("Error decoding JSON: %s err: %s", messageJSON, err)
 		}
 		board := tictactoe.GetBoardFromString(message.Board)
 
 		// Get Move - needs to be defined in a file next to this one
-		move := GetMove(message.Symbol, board)
+		move := GetMove(symbol, board)
 
 		// Convert Move to JSON
-		moveJson, err := json.Marshal(&move)
+		moveJSON, err := json.Marshal(&move)
 		if err != nil {
 			log.Fatalf("Couldn't convert move to JSON: %+v", move)
 		}
 
 		// Write JSON back and we're done!
-		fmt.Printf("%s\n", moveJson)
+		fmt.Printf("%s\n", moveJSON)
 	}
+}
+
+// ReadLine blocks until it gets something to read
+func ReadLine(stdin *bufio.Reader) (string, error) {
+	line, err := stdin.ReadString('\n')
+	if err != nil && err != io.EOF {
+		return "", err
+	}
+
+	return line, nil
 }

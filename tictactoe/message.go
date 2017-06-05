@@ -1,6 +1,9 @@
 package tictactoe
 
-type Message struct {
+type MessageSetup struct {
 	Symbol string
-	Board  string
+}
+
+type MessageMove struct {
+	Board string
 }
