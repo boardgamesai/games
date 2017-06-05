@@ -23,9 +23,8 @@ func main() {
 	}
 
 	game := tictactoe.NewGame()
-	symbols := []string{"X", "O"}
 
-	for i, player := range os.Args[1:] {
+	for _, player := range os.Args[1:] {
 		aiSrcPath := os.Getenv("GOPATH") + config.PlayerDir + "/tictactoe/" + player + "/" + player + ".go"
 		if _, err := os.Stat(aiSrcPath); os.IsNotExist(err) {
 			log.Fatalf("Player file does not exist: %s", aiSrcPath)
@@ -53,7 +52,7 @@ func main() {
 			log.Fatalf("Could not copy %s to %s", aiSrcPath, aiDestPath)
 		}
 
-		game.AddPlayer(symbols[i], playerDestPath, aiDestPath)
+		game.AddPlayer(player, playerDestPath, aiDestPath)
 	}
 
 	fmt.Printf("%s\n", game)

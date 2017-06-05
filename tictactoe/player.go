@@ -126,5 +126,5 @@ func (p *Player) Stderr() string {
 }
 
 func (p *Player) String() string {
-	return p.Symbol
+	return fmt.Sprintf("%s (%s)", p.Name, p.Symbol)
 }

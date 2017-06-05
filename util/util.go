@@ -19,6 +19,14 @@ func RandInt(min, max int) int {
 	return int(randInt.Int64()) + min
 }
 
+// CoinFlip is syntactic sugar for picking a random 0 or 1
+func CoinFlip() bool {
+	if RandInt(0, 1) == 1 {
+		return true
+	}
+	return false
+}
+
 // CopyFile copies a file from source to dest
 func CopyFile(srcPath string, destPath string) error {
 	srcFile, err := os.Open(srcPath)

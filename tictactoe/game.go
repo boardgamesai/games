@@ -6,12 +6,22 @@ import (
 	"github.com/boardgamesai/games/util"
 )
 
+type Players []*Player
+
+func (p Players) Shuffle() {
+	if util.CoinFlip() {
+		temp := p[0]
+		p[0] = p[1]
+		p[1] = temp
+	}
+}
+
 type Game struct {
-	Players []*Player
-	Board   *Board
-	Moves   []MoveLog
-	Turn    int
-	Winner  *Player
+	Players
+	Board  *Board
+	Moves  []MoveLog
+	Turn   int
+	Winner *Player
 }
 
 func NewGame() *Game {
@@ -29,6 +39,11 @@ func (g *Game) Play() error {
 	if err != nil {
 		return err
 	}
+
+	// Decide who is X and goes first
+	g.Players.Shuffle()
+	g.Players[0].Symbol = "X"
+	g.Players[1].Symbol = "O"
 
 	// Launch the player processes
 	for _, player := range g.Players {
@@ -68,9 +83,9 @@ func (g *Game) ApplyMove(m Move, p *Player) error {
 	return g.Board.SetGrid(m.Col, m.Row, p.Symbol)
 }
 
-func (g *Game) AddPlayer(symbol string, playerPath string, aiPath string) {
+func (g *Game) AddPlayer(name string, playerPath string, aiPath string) {
 	player := Player{
-		Symbol:     symbol,
+		Name:       name,
 		PlayerPath: playerPath,
 		AIPath:     aiPath,
 	}
