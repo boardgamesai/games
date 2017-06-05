@@ -20,7 +20,6 @@ type Game struct {
 	Players
 	Board  *Board
 	Moves  []MoveLog
-	Turn   int
 	Winner *Player
 }
 
@@ -54,14 +53,14 @@ func (g *Game) Play() error {
 	}
 
 	// Game is over when someone wins or board is filled
+	player := g.Players[0]
 	for !g.Board.IsFull() {
-		player := g.CurrentPlayer()
 		move, err := player.GetMove(g.Board)
 		if err != nil {
 			return fmt.Errorf("player %s failed to get move, err: %s stderr: %s", player, err, player.Stderr())
 		}
 
-		err = g.ApplyMove(move, player)
+		err = g.Board.SetGrid(move.Col, move.Row, player.Symbol)
 		if err != nil {
 			return fmt.Errorf("player %s committed invalid move: %s err: %s", player, move, err)
 		}
@@ -73,14 +72,14 @@ func (g *Game) Play() error {
 			break
 		}
 
-		g.Turn = g.nextTurn()
+		if player == g.Players[0] {
+			player = g.Players[1]
+		} else {
+			player = g.Players[0]
+		}
 	}
 
 	return nil
-}
-
-func (g *Game) ApplyMove(m Move, p *Player) error {
-	return g.Board.SetGrid(m.Col, m.Row, p.Symbol)
 }
 
 func (g *Game) AddPlayer(name string, playerPath string, aiPath string) {
@@ -92,17 +91,6 @@ func (g *Game) AddPlayer(name string, playerPath string, aiPath string) {
 	g.Players = append(g.Players, &player)
 }
 
-func (g *Game) CurrentPlayer() *Player {
-	return g.Players[g.Turn]
-}
-
 func (g *Game) String() string {
 	return fmt.Sprintf("%s", g.Board)
-}
-
-func (g *Game) nextTurn() int {
-	if g.Turn == 0 {
-		return 1
-	}
-	return 0
 }
