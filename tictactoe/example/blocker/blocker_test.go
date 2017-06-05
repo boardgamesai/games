@@ -1,9 +1,9 @@
-package player2
+package main
 
 import (
 	"testing"
 
-	"github.com/beamrider9/games/tictactoe"
+	"github.com/boardgamesai/games/tictactoe"
 )
 
 func TestGetMove(t *testing.T) {
@@ -38,10 +38,9 @@ func TestGetMove(t *testing.T) {
 		{"   | X |X  ", 2, 0},
 	}
 
-	bot := Bot{}
 	for _, test := range tests {
 		board := tictactoe.GetBoardFromString(test.boardStr)
-		move := bot.GetMove("O", *board)
+		move := GetMove("O", board)
 		if move.Col != test.expectedCol || move.Row != test.expectedRow {
 			t.Errorf("Blocker GetMove board: %s expected: [%d,%d] got: %s", test.boardStr, test.expectedCol, test.expectedRow, move)
 		}
