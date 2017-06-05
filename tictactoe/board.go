@@ -83,12 +83,6 @@ func (b *Board) PossibleMoves() []Move {
 	return moves
 }
 
-func (b *Board) DeepCopy() Board {
-	newBoard := Board{}
-	newBoard.grid = b.grid
-	return newBoard
-}
-
 func (b *Board) String() string {
 	rows := make([]string, 3)
 
