@@ -65,7 +65,7 @@ func (g *Game) Play() error {
 }
 
 func (g *Game) ApplyMove(m Move, p *Player) error {
-	return g.Board.Set(m.Col, m.Row, p.Symbol)
+	return g.Board.SetGrid(m.Col, m.Row, p.Symbol)
 }
 
 func (g *Game) AddPlayer(symbol string, playerPath string, aiPath string) {

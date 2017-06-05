@@ -48,7 +48,7 @@ func TestSetValidation(t *testing.T) {
 
 	for _, test := range tests {
 		board := GetBoardFromString(test.boardStr)
-		err := board.Set(test.row, test.col, "X")
+		err := board.SetGrid(test.row, test.col, "X")
 		if err != test.expected {
 			fmt.Printf("%s", board)
 			t.Errorf("SetValidation board: %s set: [%d, %d] expected: %s got: %s", test.boardStr, test.row, test.col, test.expected, err)

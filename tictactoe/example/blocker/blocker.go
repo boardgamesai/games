@@ -20,8 +20,8 @@ func GetMove(symbol string, board *tictactoe.Board) tictactoe.Move {
 		row := [3]string{}
 		col := [3]string{}
 		for j := 0; j < 3; j++ {
-			row[j] = board.Get(j, i)
-			col[j] = board.Get(i, j)
+			row[j] = board.Grid(j, i)
+			col[j] = board.Grid(i, j)
 		}
 
 		if row[0] == opponent && row[1] == opponent && row[2] == empty {
@@ -42,7 +42,7 @@ func GetMove(symbol string, board *tictactoe.Board) tictactoe.Move {
 	}
 
 	// Next check the diagonals.
-	diag := [3]string{board.Get(0, 0), board.Get(1, 1), board.Get(2, 2)}
+	diag := [3]string{board.Grid(0, 0), board.Grid(1, 1), board.Grid(2, 2)}
 	if diag[0] == opponent && diag[1] == opponent && diag[2] == empty {
 		return tictactoe.Move{2, 2}
 	} else if diag[0] == opponent && diag[1] == empty && diag[2] == opponent {
@@ -51,7 +51,7 @@ func GetMove(symbol string, board *tictactoe.Board) tictactoe.Move {
 		return tictactoe.Move{0, 0}
 	}
 
-	diag = [3]string{board.Get(0, 2), board.Get(1, 1), board.Get(2, 0)}
+	diag = [3]string{board.Grid(0, 2), board.Grid(1, 1), board.Grid(2, 0)}
 	if diag[0] == opponent && diag[1] == opponent && diag[2] == empty {
 		return tictactoe.Move{2, 0}
 	} else if diag[0] == opponent && diag[1] == empty && diag[2] == opponent {

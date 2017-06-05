@@ -20,16 +20,16 @@ var (
 	ErrNotEmpty    = errors.New("not empty")
 )
 
-func (b *Board) Get(col, row int) string {
+func (b *Board) Grid(col, row int) string {
 	return b.grid[col][row]
 }
 
-func (b *Board) Set(col, row int, symbol string) error {
+func (b *Board) SetGrid(col, row int, symbol string) error {
 	if row > 2 || row < 0 || col > 2 || col < 0 {
 		return ErrOutOfBounds
 	}
 
-	if b.Get(col, row) != Empty {
+	if b.Grid(col, row) != Empty {
 		return ErrNotEmpty
 	}
 
@@ -43,8 +43,8 @@ func (b *Board) HasWinner() bool {
 		row := [3]string{}
 		col := [3]string{}
 		for j := 0; j < 3; j++ {
-			row[j] = b.Get(j, i)
-			col[j] = b.Get(i, j)
+			row[j] = b.Grid(j, i)
+			col[j] = b.Grid(i, j)
 		}
 
 		if isThreeInARow(row) || isThreeInARow(col) {
@@ -53,8 +53,8 @@ func (b *Board) HasWinner() bool {
 	}
 
 	// Have to manually check diagonals
-	diagonal1 := [3]string{b.Get(0, 0), b.Get(1, 1), b.Get(2, 2)}
-	diagonal2 := [3]string{b.Get(0, 2), b.Get(1, 1), b.Get(2, 0)}
+	diagonal1 := [3]string{b.Grid(0, 0), b.Grid(1, 1), b.Grid(2, 2)}
+	diagonal2 := [3]string{b.Grid(0, 2), b.Grid(1, 1), b.Grid(2, 0)}
 	if isThreeInARow(diagonal1) || isThreeInARow(diagonal2) {
 		return true
 	}
@@ -74,7 +74,7 @@ func (b *Board) PossibleMoves() []Move {
 	moves := []Move{}
 	for i := 0; i < 3; i++ {
 		for j := 0; j < 3; j++ {
-			if b.Get(i, j) == Empty {
+			if b.Grid(i, j) == Empty {
 				moves = append(moves, Move{i, j})
 			}
 		}
@@ -89,7 +89,7 @@ func (b *Board) String() string {
 	for i := 0; i < 3; i++ {
 		row := make([]string, 3)
 		for j := 0; j < 3; j++ {
-			cell := b.Get(j, i)
+			cell := b.Grid(j, i)
 			if cell == Empty {
 				cell = " "
 			}
@@ -107,7 +107,7 @@ func GetStringFromBoard(b *Board) string {
 	for i := 0; i < 3; i++ {
 		row := ""
 		for j := 0; j < 3; j++ {
-			symbol := b.Get(j, i)
+			symbol := b.Grid(j, i)
 			if symbol == Empty {
 				symbol = " "
 			}
@@ -125,7 +125,7 @@ func GetBoardFromString(s string) *Board {
 		for j := 0; j < 3; j++ {
 			symbol := string(row[j])
 			if symbol != " " {
-				b.Set(j, i, symbol)
+				b.SetGrid(j, i, symbol)
 			}
 		}
 	}
