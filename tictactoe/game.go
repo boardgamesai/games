@@ -60,10 +60,11 @@ func (g *Game) Play() error {
 			return fmt.Errorf("player %s failed to get move, err: %s stderr: %s", player, err, player.Stderr())
 		}
 
-		err = g.Board.SetGrid(move.Col, move.Row, player.Symbol)
+		err = g.Board.IsValidMove(move)
 		if err != nil {
 			return fmt.Errorf("player %s committed invalid move: %s err: %s", player, move, err)
 		}
+		g.Board.Grid[move.Col][move.Row] = player.Symbol
 
 		g.Moves = append(g.Moves, MoveLog{move, player})
 
