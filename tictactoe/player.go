@@ -22,6 +22,7 @@ type Player struct {
 	ID         string
 	Name       string
 	Symbol     string // "X" or "O"
+	Order      int    // 1-based
 	PlayerPath string // The boardgamesAI-provided driver
 	AIPath     string // The code the user writes
 	cmd        *exec.Cmd

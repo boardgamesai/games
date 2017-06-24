@@ -4,9 +4,9 @@ import "fmt"
 
 type MoveLog struct {
 	Move
-	*Player
+	Order int
 }
 
 func (m MoveLog) String() string {
-	return fmt.Sprintf("%s plays %s", m.Player, m.Move)
+	return fmt.Sprintf("Player %d plays %s", m.Order, m.Move)
 }

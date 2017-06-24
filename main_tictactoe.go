@@ -55,12 +55,16 @@ func main() {
 		game.AddPlayer(player, playerDestPath, aiDestPath)
 	}
 
-	fmt.Printf("%s\n", game)
-
 	err = game.Play()
 	if err != nil {
 		fmt.Printf("game ended with error: %s\n", err)
 	}
+
+	for _, player := range game.Players {
+		fmt.Printf("Player %d: %s\n", player.Order, player.Name)
+	}
+
+	fmt.Println("")
 
 	for i, log := range game.Moves {
 		fmt.Printf("%d. %s\n", i+1, log)
