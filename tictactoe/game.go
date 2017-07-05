@@ -67,11 +67,8 @@ func (g *Game) Play() error {
 			break
 		}
 
-		if playerTurn == 0 {
-			playerTurn = 1
-		} else {
-			playerTurn = 0
-		}
+		// Bitwise XOR with 1 flips 0 -> 1 and 1 -> 0
+		playerTurn = playerTurn ^ 1
 	}
 
 	return nil
