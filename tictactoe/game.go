@@ -34,9 +34,14 @@ func (g *Game) Play() error {
 
 	// Launch the player processes
 	for _, player := range g.Players {
-		err := player.Run(config.UseSandbox)
+		err = player.Run(config.UseSandbox)
 		if err != nil {
 			return fmt.Errorf("player %s failed to run, err: %s", player, err)
+		}
+
+		err = player.Setup(g)
+		if err != nil {
+			return fmt.Errorf("player %s failed to setup, err: %s", player, err)
 		}
 	}
 

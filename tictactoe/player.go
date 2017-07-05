@@ -75,11 +75,11 @@ func (p *Player) Run(useSandbox bool) error {
 		err = fmt.Errorf("Timeout launching player")
 	}
 
-	if err != nil {
-		return err
-	}
+	return err
+}
 
-	// Now tell them which symbol they are. Note that we don't wait for a response.
+func (p *Player) Setup(g *Game) error {
+	// Note that we don't wait for a response here.
 	// The other end reads line-by-line and will do the right thing.
 	message := MessageSetup{
 		Symbol: p.Symbol,
@@ -88,12 +88,9 @@ func (p *Player) Run(useSandbox bool) error {
 	if err != nil {
 		return err
 	}
-	_, err = io.WriteString(*p.cmdStdin, fmt.Sprintf("%s\n", messageJSON))
-	if err != nil {
-		return err
-	}
 
-	return nil
+	_, err = io.WriteString(*p.cmdStdin, fmt.Sprintf("%s\n", messageJSON))
+	return err
 }
 
 func (p *Player) GetMove(b *Board) (Move, error) {
