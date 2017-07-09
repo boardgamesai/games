@@ -38,9 +38,13 @@ func TestGetMove(t *testing.T) {
 		{"   | X |X  ", 2, 0},
 	}
 
+	state := tictactoe.State{
+		Symbol: "O",
+	}
+
 	for _, test := range tests {
-		board := tictactoe.GetBoardFromString(test.boardStr)
-		move := GetMove("O", board)
+		state.Board = tictactoe.GetBoardFromString(test.boardStr)
+		move := GetMove(&state)
 		if move.Col != test.expectedCol || move.Row != test.expectedRow {
 			t.Errorf("Blocker GetMove board: %s expected: [%d,%d] got: %s", test.boardStr, test.expectedCol, test.expectedRow, move)
 		}

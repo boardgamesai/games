@@ -49,7 +49,7 @@ func (g *Game) Play() error {
 	playerTurn := 0
 	for !g.Board.IsFull() {
 		player := g.Players[playerTurn]
-		move, err := player.GetMove(g.Board)
+		move, err := player.GetMove(g)
 		if err != nil {
 			return fmt.Errorf("player %s failed to get move, err: %s stderr: %s", player, err, player.Stderr())
 		}
@@ -95,6 +95,20 @@ func (g *Game) ShufflePlayers() {
 
 	g.Players[0].Symbol = "X"
 	g.Players[1].Symbol = "O"
+}
+
+// GetNewMovesForPlayer crawls the move log and finds all the moves since p's last move
+func (g *Game) GetNewMovesForPlayer(p *Player) []MoveLog {
+	moves := []MoveLog{}
+
+	for i := len(g.Moves) - 1; i >= 0; i-- {
+		if g.Moves[i].Order == p.Order {
+			break
+		}
+		moves = append([]MoveLog{g.Moves[i]}, moves...)
+	}
+
+	return moves
 }
 
 func (g *Game) String() string {

@@ -64,7 +64,7 @@ func main() {
 		fmt.Printf("Player %d: %s\n", player.Order, player.Name)
 	}
 
-	fmt.Println("")
+	fmt.Println()
 
 	for i, log := range game.Moves {
 		fmt.Printf("%d. %s\n", i+1, log)
@@ -76,5 +76,14 @@ func main() {
 		fmt.Printf("%s wins!\n", game.Winner)
 	} else {
 		fmt.Printf("Game is a draw.\n")
+	}
+	fmt.Println()
+
+	for _, player := range game.Players {
+		loggedOutput := player.Stderr()
+		if loggedOutput != "" {
+			fmt.Printf("Player %d logged output:\n", player.Order)
+			fmt.Printf("%s\n", loggedOutput)
+		}
 	}
 }

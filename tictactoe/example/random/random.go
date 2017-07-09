@@ -5,7 +5,7 @@ import (
 	"github.com/boardgamesai/games/util"
 )
 
-func GetMove(symbol string, board *tictactoe.Board) tictactoe.Move {
-	moves := board.PossibleMoves()
+func GetMove(state *tictactoe.State) tictactoe.Move {
+	moves := state.Board.PossibleMoves()
 	return moves[util.RandInt(0, len(moves)-1)]
 }

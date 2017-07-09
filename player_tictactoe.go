@@ -18,7 +18,7 @@ func main() {
 
 	stdin := bufio.NewReader(os.Stdin)
 
-	// First thing after startup is to wait to be told if we are X or O.
+	// First thing after startup is to wait to be told our initial state.
 	messageJSON, err := ReadLine(stdin)
 	if err != nil {
 		log.Fatalf("Error reading input: %s\n", err)
@@ -28,7 +28,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error decoding JSON: %s err: %s", messageJSON, err)
 	}
-	symbol := message.Symbol
+
+	state := tictactoe.State{
+		Symbol:  message.Symbol,
+		Order:   message.Order,
+		Players: []tictactoe.Player{},
+	}
+	for _, player := range message.Players {
+		player.PlayerPath = "" // Wipe out irrelevant stuff
+		player.AIPath = ""     // TODO - don't send it in the first place
+		state.Players = append(state.Players, *player)
+	}
 
 	for {
 		// Get raw JSON
@@ -43,10 +53,20 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error decoding JSON: %s err: %s", messageJSON, err)
 		}
-		board := tictactoe.GetBoardFromString(message.Board)
+
+		state.Board = tictactoe.GetBoardFromString(message.Board)
+		state.NewMoves = message.NewMoves
+		state.AllMoves = append(state.AllMoves, message.NewMoves...)
 
 		// Get Move - needs to be defined in a file next to this one
-		move := GetMove(symbol, board)
+		move := GetMove(&state)
+
+		// Add new move to our state immediately - we don't get our own moves in NewMoves
+		moveLog := tictactoe.MoveLog{
+			Move:  move,
+			Order: state.Order,
+		}
+		state.AllMoves = append(state.AllMoves, moveLog)
 
 		// Convert Move to JSON
 		moveJSON, err := json.Marshal(&move)

@@ -5,15 +5,17 @@ import (
 	"github.com/boardgamesai/games/util"
 )
 
-func GetMove(symbol string, board *tictactoe.Board) tictactoe.Move {
+func GetMove(state *tictactoe.State) tictactoe.Move {
 	// Look for a potential win, and if we find one, block it.
 	empty := tictactoe.Empty
 	var opponent string
-	if symbol == "X" {
+	if state.Symbol == "X" {
 		opponent = "O"
 	} else {
 		opponent = "X"
 	}
+
+	board := state.Board
 
 	// First check the rows and columns.
 	for i := 0; i < 3; i++ {

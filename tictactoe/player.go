@@ -82,7 +82,9 @@ func (p *Player) Setup(g *Game) error {
 	// Note that we don't wait for a response here.
 	// The other end reads line-by-line and will do the right thing.
 	message := MessageSetup{
-		Symbol: p.Symbol,
+		Symbol:  p.Symbol,
+		Order:   p.Order,
+		Players: g.Players,
 	}
 	messageJSON, err := json.Marshal(&message)
 	if err != nil {
@@ -93,11 +95,12 @@ func (p *Player) Setup(g *Game) error {
 	return err
 }
 
-func (p *Player) GetMove(b *Board) (Move, error) {
+func (p *Player) GetMove(g *Game) (Move, error) {
 	move := Move{}
 
 	message := MessageMove{
-		Board: GetStringFromBoard(b),
+		Board:    GetStringFromBoard(g.Board),
+		NewMoves: g.GetNewMovesForPlayer(p),
 	}
 
 	messageJSON, err := json.Marshal(&message)
