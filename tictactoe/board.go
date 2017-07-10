@@ -102,11 +102,11 @@ func GetStringFromBoard(b *Board) string {
 	for i := 0; i < 3; i++ {
 		row := ""
 		for j := 0; j < 3; j++ {
-			symbol := b.Grid[j][i]
-			if symbol == Empty {
-				symbol = " "
+			cell := b.Grid[j][i]
+			if cell == Empty {
+				cell = " "
 			}
-			row += symbol
+			row += cell
 		}
 		rows[i] = row
 	}
@@ -118,9 +118,9 @@ func GetBoardFromString(s string) *Board {
 	b := Board{}
 	for i, row := range strings.Split(s, "|") {
 		for j := 0; j < 3; j++ {
-			symbol := string(row[j])
-			if symbol != " " {
-				b.Grid[j][i] = symbol
+			cell := string(row[j])
+			if cell != " " {
+				b.Grid[j][i] = cell
 			}
 		}
 	}
