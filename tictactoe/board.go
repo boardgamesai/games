@@ -7,9 +7,9 @@ import (
 
 type Board struct {
 	// board is shaped like this:
-	// [0,0] [1,0] [2,0]
-	// [0,1] [1,1] [2,1]
 	// [0,2] [1,2] [2,2]
+	// [0,1] [1,1] [2,1]
+	// [0,0] [1,0] [2,0]
 	Grid [3][3]string
 }
 
@@ -78,37 +78,40 @@ func (b *Board) PossibleMoves() []Move {
 	return moves
 }
 
+// String is for nice visual display for humans
 func (b *Board) String() string {
-	rows := make([]string, 3)
+	rows := []string{}
 
-	for i := 0; i < 3; i++ {
+	for i := 2; i >= 0; i-- {
 		row := make([]string, 3)
-		for j := 0; j < 3; j++ {
+		for j := 0; j <= 2; j++ {
 			cell := b.Grid[j][i]
 			if cell == Empty {
 				cell = " "
 			}
 			row[j] = cell
 		}
-		rows[i] = strings.Join(row, "|") + "\n"
+		rows = append(rows, strings.Join(row, "|")+"\n")
 	}
 
 	return strings.Join(rows, "-----\n")
 }
 
+// GetStringFromBoard represents a board as a simple string for test succinctness.
+// For example, "X  |   |   " is a board with only an X in the top left.
 func GetStringFromBoard(b *Board) string {
-	rows := make([]string, 3)
+	rows := []string{}
 
-	for i := 0; i < 3; i++ {
+	for i := 2; i >= 0; i-- {
 		row := ""
-		for j := 0; j < 3; j++ {
+		for j := 0; j <= 2; j++ {
 			cell := b.Grid[j][i]
 			if cell == Empty {
 				cell = " "
 			}
 			row += cell
 		}
-		rows[i] = row
+		rows = append(rows, row)
 	}
 
 	return strings.Join(rows, "|")
@@ -117,10 +120,10 @@ func GetStringFromBoard(b *Board) string {
 func GetBoardFromString(s string) *Board {
 	b := Board{}
 	for i, row := range strings.Split(s, "|") {
-		for j := 0; j < 3; j++ {
+		for j := 0; j <= 2; j++ {
 			cell := string(row[j])
 			if cell != " " {
-				b.Grid[j][i] = cell
+				b.Grid[j][2-i] = cell
 			}
 		}
 	}

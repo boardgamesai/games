@@ -1,7 +1,6 @@
 package tictactoe
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 )
@@ -22,29 +21,29 @@ func TestIsValidMove(t *testing.T) {
 		{"   |   |   ", 0, 2, nil},
 		{"   |   |   ", 1, 2, nil},
 		{"   |   |   ", 2, 2, nil},
-		{" XX|XXX|XXX", 0, 0, nil},
-		{"X X|XXX|XXX", 1, 0, nil},
-		{"XX |XXX|XXX", 2, 0, nil},
+		{" XX|XXX|XXX", 0, 2, nil},
+		{"X X|XXX|XXX", 1, 2, nil},
+		{"XX |XXX|XXX", 2, 2, nil},
 		{"XXX| XX|XXX", 0, 1, nil},
 		{"XXX|X X|XXX", 1, 1, nil},
 		{"XXX|XX |XXX", 2, 1, nil},
-		{"XXX|XXX| XX", 0, 2, nil},
-		{"XXX|XXX|X X", 1, 2, nil},
-		{"XXX|XXX|XX ", 2, 2, nil},
+		{"XXX|XXX| XX", 0, 0, nil},
+		{"XXX|XXX|X X", 1, 0, nil},
+		{"XXX|XXX|XX ", 2, 0, nil},
 		{"   |   |   ", 3, 2, ErrOutOfBounds},
 		{"   |   |   ", 2, 3, ErrOutOfBounds},
 		{"   |   |   ", 3, 3, ErrOutOfBounds},
 		{"   |   |   ", -1, 0, ErrOutOfBounds},
 		{"   |   |   ", 0, -1, ErrOutOfBounds},
-		{"X  |   |   ", 0, 0, ErrNotEmpty},
-		{" X |   |   ", 1, 0, ErrNotEmpty},
-		{"  X|   |   ", 2, 0, ErrNotEmpty},
+		{"X  |   |   ", 0, 2, ErrNotEmpty},
+		{" X |   |   ", 1, 2, ErrNotEmpty},
+		{"  X|   |   ", 2, 2, ErrNotEmpty},
 		{"   |X  |   ", 0, 1, ErrNotEmpty},
 		{"   | X |   ", 1, 1, ErrNotEmpty},
 		{"   |  X|   ", 2, 1, ErrNotEmpty},
-		{"   |   |X  ", 0, 2, ErrNotEmpty},
-		{"   |   | X ", 1, 2, ErrNotEmpty},
-		{"   |   |  X", 2, 2, ErrNotEmpty},
+		{"   |   |X  ", 0, 0, ErrNotEmpty},
+		{"   |   | X ", 1, 0, ErrNotEmpty},
+		{"   |   |  X", 2, 0, ErrNotEmpty},
 	}
 
 	for _, test := range tests {
@@ -55,7 +54,6 @@ func TestIsValidMove(t *testing.T) {
 		}
 		err := board.IsValidMove(move)
 		if err != test.expected {
-			fmt.Printf("%s", board)
 			t.Errorf("SetValidation board: %s set: [%d, %d] expected: %s got: %s", test.boardStr, test.row, test.col, test.expected, err)
 		}
 	}
@@ -102,7 +100,7 @@ func TestPossibleMoves(t *testing.T) {
 		},
 		{
 			"O  | X |   ",
-			[]Move{Move{0, 1}, Move{0, 2}, Move{1, 0}, Move{1, 2}, Move{2, 0}, Move{2, 1}, Move{2, 2}},
+			[]Move{Move{0, 0}, Move{0, 1}, Move{1, 0}, Move{1, 2}, Move{2, 0}, Move{2, 1}, Move{2, 2}},
 		},
 		{
 			"O  | X |X  ",
@@ -110,23 +108,23 @@ func TestPossibleMoves(t *testing.T) {
 		},
 		{
 			"O O| X |X  ",
-			[]Move{Move{0, 1}, Move{1, 0}, Move{1, 2}, Move{2, 1}, Move{2, 2}},
+			[]Move{Move{0, 1}, Move{1, 0}, Move{1, 2}, Move{2, 0}, Move{2, 1}},
 		},
 		{
 			"OXO| X |X  ",
-			[]Move{Move{0, 1}, Move{1, 2}, Move{2, 1}, Move{2, 2}},
+			[]Move{Move{0, 1}, Move{1, 0}, Move{2, 0}, Move{2, 1}},
 		},
 		{
 			"OXO| X |XO ",
-			[]Move{Move{0, 1}, Move{2, 1}, Move{2, 2}},
+			[]Move{Move{0, 1}, Move{2, 0}, Move{2, 1}},
 		},
 		{
 			"OXO| XX|XO ",
-			[]Move{Move{0, 1}, Move{2, 2}},
+			[]Move{Move{0, 1}, Move{2, 0}},
 		},
 		{
 			"OXO|OXX|XO ",
-			[]Move{Move{2, 2}},
+			[]Move{Move{2, 0}},
 		},
 		{
 			"OXO|OXX|XOX",
