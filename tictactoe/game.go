@@ -60,8 +60,8 @@ func (g *Game) Play() error {
 			g.Winner = g.Players[playerTurn^1]
 			return fmt.Errorf("player %s committed invalid move: %s err: %s", player, move, err)
 		}
-		g.Board.Grid[move.Col][move.Row] = player.Symbol
 
+		g.Board.Grid[move.Col][move.Row] = player.Symbol
 		g.Moves = append(g.Moves, MoveLog{Move: move, Order: player.Order})
 
 		if g.Board.HasWinner() {
