@@ -51,11 +51,13 @@ func (g *Game) Play() error {
 		player := g.Players[playerTurn]
 		move, err := player.GetMove(g)
 		if err != nil {
+			g.Winner = g.Players[playerTurn^1]
 			return fmt.Errorf("player %s failed to get move, err: %s stderr: %s", player, err, player.Stderr())
 		}
 
 		err = g.Board.IsValidMove(move)
 		if err != nil {
+			g.Winner = g.Players[playerTurn^1]
 			return fmt.Errorf("player %s committed invalid move: %s err: %s", player, move, err)
 		}
 		g.Board.Grid[move.Col][move.Row] = player.Symbol
