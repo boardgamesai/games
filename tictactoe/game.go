@@ -62,7 +62,7 @@ func (g *Game) Play() error {
 		}
 		g.Board.Grid[move.Col][move.Row] = player.Symbol
 
-		g.Moves = append(g.Moves, MoveLog{Move: move, Order: playerTurn + 1})
+		g.Moves = append(g.Moves, MoveLog{Move: move, Order: player.Order})
 
 		if g.Board.HasWinner() {
 			g.Winner = player
