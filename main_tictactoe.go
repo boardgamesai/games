@@ -52,7 +52,11 @@ func main() {
 			log.Fatalf("Could not copy %s to %s", aiSrcPath, aiDestPath)
 		}
 
-		game.AddPlayer(player, playerDestPath, aiDestPath)
+		game.Players = append(game.Players, &tictactoe.Player{
+			Name:       player,
+			PlayerPath: playerDestPath,
+			AIPath:     aiDestPath,
+		})
 	}
 
 	err = game.Play()

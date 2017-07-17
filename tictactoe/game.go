@@ -76,15 +76,6 @@ func (g *Game) Play() error {
 	return nil
 }
 
-func (g *Game) AddPlayer(name string, playerPath string, aiPath string) {
-	player := Player{
-		Name:       name,
-		PlayerPath: playerPath,
-		AIPath:     aiPath,
-	}
-	g.Players = append(g.Players, &player)
-}
-
 func (g *Game) ShufflePlayers() {
 	if util.CoinFlip() {
 		temp := g.Players[0]
