@@ -15,7 +15,7 @@ type Game struct {
 
 func NewGame() *Game {
 	game := Game{
-		Players: []*Player{},
+		Players: make([]*Player, 2),
 		Board:   &Board{},
 		Moves:   []MoveLog{},
 	}
