@@ -32,8 +32,8 @@ func main() {
 	}
 
 	players := []*tictactoe.Player{}
-	for _, player := range flag.Args() {
-		aiSrcPath := os.Getenv("GOPATH") + config.PlayerDir + "/tictactoe/" + player + "/" + player + ".go"
+	for _, playerName := range flag.Args() {
+		aiSrcPath := os.Getenv("GOPATH") + config.PlayerDir + "/tictactoe/" + playerName + "/" + playerName + ".go"
 		if _, err := os.Stat(aiSrcPath); os.IsNotExist(err) {
 			log.Fatalf("Player file does not exist: %s", aiSrcPath)
 		}
@@ -42,7 +42,7 @@ func main() {
 		tmpDir := os.Getenv("GOPATH") + config.TmpDir + "/" + uuid.NewRandom().String()
 		err = os.Mkdir(tmpDir, 0700)
 		if err != nil {
-			log.Fatalf("Could not create tmp dir: %s for player: %s err: %s", tmpDir, player, err)
+			log.Fatalf("Could not create tmp dir: %s for player: %s err: %s", tmpDir, playerName, err)
 		}
 		defer os.RemoveAll(tmpDir)
 
@@ -54,17 +54,17 @@ func main() {
 		}
 
 		// Now copy over the AI-specific file
-		aiDestPath := tmpDir + "/" + player + ".go"
+		aiDestPath := tmpDir + "/" + playerName + ".go"
 		err = util.CopyFile(aiSrcPath, aiDestPath)
 		if err != nil {
 			log.Fatalf("Could not copy %s to %s", aiSrcPath, aiDestPath)
 		}
 
-		players = append(players, &tictactoe.Player{
-			Name:       player,
-			PlayerPath: playerDestPath,
-			AIPath:     aiDestPath,
-		})
+		player := tictactoe.Player{}
+		player.Name = playerName
+		player.PlayerPath = playerDestPath
+		player.AIPath = aiDestPath
+		players = append(players, &player)
 	}
 
 	if numGames == 1 {
