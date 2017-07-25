@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -110,6 +111,10 @@ func (p *RunnablePlayer) Run(useSandbox bool) error {
 	}
 
 	return err
+}
+
+func (p *RunnablePlayer) CleanUp() error {
+	return os.RemoveAll(filepath.Dir(p.PlayerPath))
 }
 
 func (p *RunnablePlayer) SendMessage(messageJSON string) error {

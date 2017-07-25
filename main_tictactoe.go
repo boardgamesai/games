@@ -4,8 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"os"
-	"path/filepath"
 
 	"github.com/boardgamesai/games/game"
 	"github.com/boardgamesai/games/tictactoe"
@@ -35,7 +33,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error setting up player %s: %s", playerName, err)
 		}
-		defer os.RemoveAll(filepath.Dir(runnablePlayer.PlayerPath))
+		defer runnablePlayer.CleanUp()
 
 		player := tictactoe.Player{
 			Name:           playerName,
