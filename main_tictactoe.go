@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
+	"github.com/boardgamesai/games/game"
 	"github.com/boardgamesai/games/tictactoe"
-	"github.com/boardgamesai/games/util"
-	"github.com/pborman/uuid"
 )
-
-const playerFile = "player_tictactoe.go"
 
 func main() {
 	numGamesFlag := flag.Int("n", 1, "number of games to play")
@@ -26,44 +24,23 @@ func main() {
 		log.Fatalf("Invalid number of games: %d\n", numGames)
 	}
 
-	config, err := util.Config()
+	config, err := game.Config()
 	if err != nil {
-		log.Fatalf("Could not read config: %s err: %s", util.ConfigPath, err)
+		log.Fatalf("Could not read config: %s err: %s", game.ConfigPath, err)
 	}
 
 	players := []*tictactoe.Player{}
 	for _, playerName := range flag.Args() {
-		aiSrcPath := os.Getenv("GOPATH") + config.PlayerDir + "/tictactoe/" + playerName + "/" + playerName + ".go"
-		if _, err := os.Stat(aiSrcPath); os.IsNotExist(err) {
-			log.Fatalf("Player file does not exist: %s", aiSrcPath)
-		}
-
-		// First create the tmp dir for the player
-		tmpDir := os.Getenv("GOPATH") + config.TmpDir + "/" + uuid.NewRandom().String()
-		err = os.Mkdir(tmpDir, 0700)
+		runnablePlayer, err := game.NewRunnablePlayer(config, "tictactoe", playerName)
 		if err != nil {
-			log.Fatalf("Could not create tmp dir: %s for player: %s err: %s", tmpDir, playerName, err)
+			log.Fatalf("Error setting up player %s: %s", playerName, err)
 		}
-		defer os.RemoveAll(tmpDir)
+		defer os.RemoveAll(filepath.Dir(runnablePlayer.PlayerPath))
 
-		// Next copy over the base player file
-		playerDestPath := tmpDir + "/" + playerFile
-		err = util.CopyFile(playerFile, playerDestPath)
-		if err != nil {
-			log.Fatalf("Could not copy %s to %s", playerFile, playerDestPath)
+		player := tictactoe.Player{
+			Name:           playerName,
+			RunnablePlayer: *runnablePlayer,
 		}
-
-		// Now copy over the AI-specific file
-		aiDestPath := tmpDir + "/" + playerName + ".go"
-		err = util.CopyFile(aiSrcPath, aiDestPath)
-		if err != nil {
-			log.Fatalf("Could not copy %s to %s", aiSrcPath, aiDestPath)
-		}
-
-		player := tictactoe.Player{}
-		player.Name = playerName
-		player.PlayerPath = playerDestPath
-		player.AIPath = aiDestPath
 		players = append(players, &player)
 	}
 

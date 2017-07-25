@@ -10,6 +10,9 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/boardgamesai/games/util"
+	"github.com/pborman/uuid"
 )
 
 const (
@@ -25,6 +28,42 @@ type RunnablePlayer struct {
 	cmdStdout    *bufio.Reader
 	cmdStderr    *bytes.Buffer
 	responseChan chan string
+}
+
+func NewRunnablePlayer(config *Configuration, gameName string, playerName string) (*RunnablePlayer, error) {
+	// Ensure this player exists
+	aiSrcPath := os.Getenv("GOPATH") + config.PlayerDir + "/" + gameName + "/" + playerName + "/" + playerName + ".go"
+	if _, err := os.Stat(aiSrcPath); os.IsNotExist(err) {
+		return nil, fmt.Errorf("Player file does not exist: %s", aiSrcPath)
+	}
+
+	// First create the tmp dir for the player
+	tmpDir := os.Getenv("GOPATH") + config.TmpDir + "/" + uuid.NewRandom().String()
+	err := os.Mkdir(tmpDir, 0700)
+	if err != nil {
+		return nil, fmt.Errorf("Could not create tmp dir: %s for player: %s err: %s", tmpDir, playerName, err)
+	}
+
+	// Next copy over the base player file
+	playerFile := "player_" + gameName + ".go"
+	playerDestPath := tmpDir + "/" + playerFile
+	err = util.CopyFile(playerFile, playerDestPath)
+	if err != nil {
+		return nil, fmt.Errorf("Could not copy %s to %s", playerFile, playerDestPath)
+	}
+
+	// Now copy over the AI-specific file
+	aiDestPath := tmpDir + "/" + playerName + ".go"
+	err = util.CopyFile(aiSrcPath, aiDestPath)
+	if err != nil {
+		return nil, fmt.Errorf("Could not copy %s to %s", aiSrcPath, aiDestPath)
+	}
+
+	player := RunnablePlayer{
+		PlayerPath: playerDestPath,
+		AIPath:     aiDestPath,
+	}
+	return &player, nil
 }
 
 func (p *RunnablePlayer) Run(useSandbox bool) error {

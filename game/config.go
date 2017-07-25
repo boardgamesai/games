@@ -1,4 +1,4 @@
-package util
+package game
 
 import (
 	"encoding/json"

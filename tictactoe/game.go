@@ -3,6 +3,7 @@ package tictactoe
 import (
 	"fmt"
 
+	"github.com/boardgamesai/games/game"
 	"github.com/boardgamesai/games/util"
 )
 
@@ -24,7 +25,7 @@ func NewGame() *Game {
 }
 
 func (g *Game) Play() error {
-	config, err := util.Config()
+	config, err := game.Config()
 	if err != nil {
 		return err
 	}
