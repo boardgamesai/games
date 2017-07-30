@@ -16,8 +16,6 @@ type Player struct {
 }
 
 func (p *Player) Setup(g *Game) error {
-	// Note that we don't wait for a response here.
-	// The other end reads line-by-line and will do the right thing.
 	message := MessageSetup{
 		Symbol:  p.Symbol,
 		Order:   p.Order,
@@ -27,7 +25,16 @@ func (p *Player) Setup(g *Game) error {
 	if err != nil {
 		return err
 	}
-	return p.SendMessage(string(messageJSON))
+
+	response, err := p.SendMessage(string(messageJSON))
+	if err != nil {
+		return err
+	}
+	if response != "OK" {
+		return fmt.Errorf("Got non-OK response when setting up player: %s err: %s", p.Name, err)
+	}
+
+	return nil
 }
 
 func (p *Player) GetMove(g *Game) (Move, error) {
@@ -40,12 +47,7 @@ func (p *Player) GetMove(g *Game) (Move, error) {
 		return Move{}, err
 	}
 
-	err = p.SendMessage(string(messageJSON))
-	if err != nil {
-		return Move{}, err
-	}
-
-	responseJSON, err := p.ReadResponse()
+	responseJSON, err := p.SendMessage(string(messageJSON))
 	if err != nil {
 		return Move{}, err
 	}

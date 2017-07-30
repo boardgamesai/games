@@ -18,7 +18,7 @@ func main() {
 
 	stdin := bufio.NewReader(os.Stdin)
 
-	// First thing after startup is to wait to be told our initial state.
+	// Next thing after startup is to wait to be told our initial state.
 	messageJSON, err := ReadLine(stdin)
 	if err != nil {
 		log.Fatalf("Error reading input: %s\n", err)
@@ -28,6 +28,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error decoding JSON: %s err: %s", messageJSON, err)
 	}
+	fmt.Printf("OK\n")
 
 	state := tictactoe.State{
 		Symbol:  message.Symbol,

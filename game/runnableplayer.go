@@ -98,8 +98,8 @@ func (p *RunnablePlayer) Run(useSandbox bool) error {
 		return err
 	}
 
-	// Wait here to make sure things started okay.
-	p.readResponseAsync()
+	// Spin off a goroutine to read the "OK" response so we can block on it below.
+	go p.readResponseAsync()
 
 	select {
 	case response := <-p.responseChan:
@@ -117,37 +117,35 @@ func (p *RunnablePlayer) CleanUp() error {
 	return os.RemoveAll(filepath.Dir(p.PlayerPath))
 }
 
-func (p *RunnablePlayer) SendMessage(messageJSON string) error {
+func (p *RunnablePlayer) SendMessage(messageJSON string) (string, error) {
 	_, err := io.WriteString(*p.cmdStdin, fmt.Sprintf("%s\n", messageJSON))
-	return err
-}
+	if err != nil {
+		return "", err
+	}
 
-func (p *RunnablePlayer) ReadResponse() (string, error) {
-	p.readResponseAsync()
+	// This spins off a goroutine to read the response, and we block on it just below.
+	go p.readResponseAsync()
 
-	var responseJSON string
-	var err error
+	var response string
 
 	select {
-	case responseJSON = <-p.responseChan:
+	case response = <-p.responseChan:
 		// Do nothing, the assignment above is the important thing
 	case <-time.After(time.Second * PlayerMoveTimeout):
 		err = fmt.Errorf("Timeout reading player move response")
 	}
 
-	return responseJSON, err
+	return response, err
 }
 
 func (p *RunnablePlayer) readResponseAsync() {
-	go func() {
-		response, err := p.cmdStdout.ReadString('\n')
-		if err != nil && err != io.EOF {
-			// TODO how to communicate this error?
-			log.Fatalf("couldn't read from stdin: %s\n", err)
-		}
+	response, err := p.cmdStdout.ReadString('\n')
+	if err != nil && err != io.EOF {
+		// TODO how to communicate this error?
+		log.Fatalf("couldn't read from stdin: %s\n", err)
+	}
 
-		p.responseChan <- strings.TrimSpace(response)
-	}()
+	p.responseChan <- strings.TrimSpace(response)
 }
 
 func (p *RunnablePlayer) Stderr() string {
