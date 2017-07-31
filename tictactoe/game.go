@@ -39,6 +39,7 @@ func (g *Game) Play() error {
 		if err != nil {
 			return fmt.Errorf("player %s failed to run, err: %s", player, err)
 		}
+		defer player.Terminate()
 
 		err = player.Setup(g)
 		if err != nil {

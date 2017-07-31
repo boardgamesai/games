@@ -113,6 +113,10 @@ func (p *RunnablePlayer) Run(useSandbox bool) error {
 	return err
 }
 
+func (p *RunnablePlayer) Terminate() error {
+	return p.cmd.Process.Kill()
+}
+
 func (p *RunnablePlayer) CleanUp() error {
 	return os.RemoveAll(filepath.Dir(p.PlayerPath))
 }
