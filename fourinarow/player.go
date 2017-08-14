@@ -15,8 +15,6 @@ type Player struct {
 }
 
 func (p *Player) Setup(g *Game) error {
-	// Note that we don't wait for a response here.
-	// The other end reads line-by-line and will do the right thing.
 	message := MessageSetup{
 		Order:   p.Order,
 		Players: g.Players,
