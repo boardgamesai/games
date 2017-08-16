@@ -26,11 +26,11 @@ func (p *Player) Setup(g *Game) error {
 		return err
 	}
 
-	response, err := p.SendMessage(string(messageJSON))
+	response, err := p.SendMessage(messageJSON)
 	if err != nil {
 		return err
 	}
-	if response != "OK" {
+	if string(response) != "OK" {
 		return fmt.Errorf("Got non-OK response when setting up player: %s err: %s", p.Name, err)
 	}
 
@@ -47,13 +47,13 @@ func (p *Player) GetMove(g *Game) (Move, error) {
 		return Move{}, err
 	}
 
-	responseJSON, err := p.SendMessage(string(messageJSON))
+	responseJSON, err := p.SendMessage(messageJSON)
 	if err != nil {
 		return Move{}, err
 	}
 
 	move := Move{}
-	err = json.Unmarshal([]byte(responseJSON), &move)
+	err = json.Unmarshal(responseJSON, &move)
 	return move, err
 }
 

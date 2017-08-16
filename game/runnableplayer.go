@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/boardgamesai/games/util"
@@ -28,7 +27,7 @@ type RunnablePlayer struct {
 	cmdStdin     *io.WriteCloser
 	cmdStdout    *bufio.Reader
 	cmdStderr    *bytes.Buffer
-	responseChan chan string
+	responseChan chan []byte
 }
 
 func NewRunnablePlayer(config *Configuration, gameName string, playerName string) (*RunnablePlayer, error) {
@@ -92,7 +91,7 @@ func (p *RunnablePlayer) Run(useSandbox bool) error {
 	cmd.Stderr = &errBuf
 	p.cmdStderr = &errBuf
 
-	p.responseChan = make(chan string, 1)
+	p.responseChan = make(chan []byte, 1)
 
 	if err = cmd.Start(); err != nil {
 		return err
@@ -103,7 +102,7 @@ func (p *RunnablePlayer) Run(useSandbox bool) error {
 
 	select {
 	case response := <-p.responseChan:
-		if response != "OK" {
+		if string(response) != "OK" {
 			err = fmt.Errorf("Got non-OK response when launching player: %s stderr: %s", response, p.Stderr())
 		}
 	case <-time.After(time.Second * PlayerLaunchTimeout):
@@ -121,16 +120,16 @@ func (p *RunnablePlayer) CleanUp() error {
 	return os.RemoveAll(filepath.Dir(p.PlayerPath))
 }
 
-func (p *RunnablePlayer) SendMessage(messageJSON string) (string, error) {
+func (p *RunnablePlayer) SendMessage(messageJSON []byte) ([]byte, error) {
 	_, err := io.WriteString(*p.cmdStdin, fmt.Sprintf("%s\n", messageJSON))
 	if err != nil {
-		return "", err
+		return []byte{}, err
 	}
 
 	// This spins off a goroutine to read the response, and we block on it just below.
 	go p.readResponseAsync()
 
-	var response string
+	var response []byte
 
 	select {
 	case response = <-p.responseChan:
@@ -143,13 +142,15 @@ func (p *RunnablePlayer) SendMessage(messageJSON string) (string, error) {
 }
 
 func (p *RunnablePlayer) readResponseAsync() {
-	response, err := p.cmdStdout.ReadString('\n')
+	response, err := p.cmdStdout.ReadBytes('\n')
 	if err != nil && err != io.EOF {
 		// TODO how to communicate this error?
 		log.Fatalf("couldn't read from stdin: %s\n", err)
+		return
 	}
 
-	p.responseChan <- strings.TrimSpace(response)
+	// Chop off the newline
+	p.responseChan <- response[:len(response)-1]
 }
 
 func (p *RunnablePlayer) Stderr() string {
