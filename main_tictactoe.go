@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/boardgamesai/games/game"
 	"github.com/boardgamesai/games/tictactoe"
 )
 
@@ -22,55 +21,43 @@ func main() {
 		log.Fatalf("Invalid number of games: %d\n", numGames)
 	}
 
-	config, err := game.Config()
-	if err != nil {
-		log.Fatalf("Could not read config: %s err: %s", game.ConfigPath, err)
-	}
-
-	players := []*tictactoe.Player{}
+	g := tictactoe.NewGame()
 	for _, playerName := range flag.Args() {
-		runnablePlayer, err := game.NewRunnablePlayer(config, "tictactoe", playerName)
-		if err != nil {
-			log.Fatalf("Error setting up player %s: %s", playerName, err)
-		}
-		defer runnablePlayer.CleanUp()
-
-		player := tictactoe.Player{
-			Name:           playerName,
-			RunnablePlayer: *runnablePlayer,
-		}
-		players = append(players, &player)
+		g.AddPlayer(playerName)
 	}
+
+	// Grab a copy of the game's players in the original order. The game will shuffle them,
+	// but we want to know the original order for reporting purposes.
+	players := make([]*tictactoe.Player, len(g.Players))
+	copy(players, g.Players)
 
 	if numGames == 1 {
-		game := tictactoe.NewGame()
-		game.Players = players
-
-		err = game.Play()
+		err := g.Play()
 		if err != nil {
 			fmt.Printf("game ended with error: %s\n", err)
+			return
 		}
 
-		for _, player := range game.Players {
+		for _, player := range g.Players {
 			fmt.Printf("Player %d: %s\n", player.Order, player.Name)
 		}
 
 		fmt.Println()
 
-		for i, log := range game.Moves {
+		for i, log := range g.Moves {
 			fmt.Printf("%d. %s\n", i+1, log)
 		}
 
-		fmt.Printf("\n%s\n", game)
+		fmt.Printf("\n%s\n", g)
 
-		if game.Winner != nil {
-			fmt.Printf("%s wins!\n", game.Winner)
+		if g.Winner != nil {
+			fmt.Printf("%s wins!\n", g.Winner)
 		} else {
 			fmt.Printf("Game is a draw.\n")
 		}
 		fmt.Println()
 
-		for _, player := range game.Players {
+		for _, player := range g.Players {
 			loggedOutput := player.Stderr()
 			if loggedOutput != "" {
 				fmt.Printf("Player %d logged output:\n", player.Order)
@@ -85,27 +72,26 @@ func main() {
 
 		for i := 1; i <= numGames; i++ {
 			fmt.Printf("playing game %d...\n", i)
-			game := tictactoe.NewGame()
-			copy(game.Players, players) // Copy so we preserve original command line order for end tally
 
-			err = game.Play()
+			err := g.Play()
 			if err != nil {
 				fmt.Printf("game %d ended with error: %s\n", i, err)
+				continue
 			}
 
-			if game.Winner != nil {
+			if g.Winner != nil {
 				// Somebody won.
-				outcomes[game.Winner]["win"]++
-				for _, player := range game.Players {
+				outcomes[g.Winner]["win"]++
+				for _, player := range g.Players {
 					// Find the non-winner aka the loser
-					if player != game.Winner {
+					if player != g.Winner {
 						outcomes[player]["lose"]++
 						break
 					}
 				}
 			} else {
 				// This is a draw.
-				for _, player := range game.Players {
+				for _, player := range g.Players {
 					outcomes[player]["draw"]++
 				}
 			}

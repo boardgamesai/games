@@ -11,7 +11,7 @@ type Player struct {
 	ID    string
 	Name  string
 	Order int // 1-based
-	game.RunnablePlayer
+	game.Player
 }
 
 func (p *Player) Setup(g *Game) error {

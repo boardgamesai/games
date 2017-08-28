@@ -35,8 +35,6 @@ func main() {
 		Players: []fourinarow.Player{},
 	}
 	for _, player := range message.Players {
-		player.PlayerPath = "" // Wipe out irrelevant stuff
-		player.AIPath = ""     // TODO - don't send it in the first place
 		state.Players = append(state.Players, *player)
 	}
 

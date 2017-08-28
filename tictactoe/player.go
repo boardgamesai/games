@@ -12,7 +12,7 @@ type Player struct {
 	Name   string
 	Order  int    // 1-based
 	Symbol string // "X" or "O"
-	game.RunnablePlayer
+	game.Player
 }
 
 func (p *Player) Setup(g *Game) error {

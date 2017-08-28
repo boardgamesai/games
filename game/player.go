@@ -20,9 +20,11 @@ const (
 	PlayerMoveTimeout   = 15
 )
 
-type RunnablePlayer struct {
-	PlayerPath   string // The boardgamesAI-provided driver
-	AIPath       string // The code the user writes
+type Player struct {
+	gameName     string
+	fileName     string // Non-absolute filename of stored user-written code
+	playerPath   string // The runnable boardgamesAI-provided driver
+	aiPath       string // The runnable code the user writes
 	cmd          *exec.Cmd
 	cmdStdin     *io.WriteCloser
 	cmdStdout    *bufio.Reader
@@ -30,45 +32,51 @@ type RunnablePlayer struct {
 	responseChan chan []byte
 }
 
-func NewRunnablePlayer(config *Configuration, gameName string, playerName string) (*RunnablePlayer, error) {
+func NewPlayer(gameName string, playerName string) *Player {
+	player := Player{
+		gameName: gameName,
+		fileName: playerName,
+	}
+	return &player
+}
+
+func (p *Player) setupFiles(config *Configuration) error {
 	// Ensure this player exists
-	aiSrcPath := os.Getenv("GOPATH") + config.PlayerDir + "/" + gameName + "/" + playerName + "/" + playerName + ".go"
+	aiSrcPath := os.Getenv("GOPATH") + config.PlayerDir + "/" + p.gameName + "/" + p.fileName + "/" + p.fileName + ".go"
 	if _, err := os.Stat(aiSrcPath); os.IsNotExist(err) {
-		return nil, fmt.Errorf("Player file does not exist: %s", aiSrcPath)
+		return fmt.Errorf("Player file does not exist: %s", aiSrcPath)
 	}
 
 	// First create the tmp dir for the player
 	tmpDir := os.Getenv("GOPATH") + config.TmpDir + "/" + uuid.NewRandom().String()
 	err := os.Mkdir(tmpDir, 0700)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create tmp dir: %s for player: %s err: %s", tmpDir, playerName, err)
+		return fmt.Errorf("Could not create tmp dir: %s for player: %s err: %s", tmpDir, p.fileName, err)
 	}
 
 	// Next copy over the base player file
-	playerFile := "player_" + gameName + ".go"
+	playerFile := "player_" + p.gameName + ".go"
 	playerDestPath := tmpDir + "/" + playerFile
 	err = util.CopyFile(playerFile, playerDestPath)
 	if err != nil {
-		return nil, fmt.Errorf("Could not copy %s to %s", playerFile, playerDestPath)
+		return fmt.Errorf("Could not copy %s to %s", playerFile, playerDestPath)
 	}
 
 	// Now copy over the AI-specific file
-	aiDestPath := tmpDir + "/" + playerName + ".go"
+	aiDestPath := tmpDir + "/" + p.fileName + ".go"
 	err = util.CopyFile(aiSrcPath, aiDestPath)
 	if err != nil {
-		return nil, fmt.Errorf("Could not copy %s to %s", aiSrcPath, aiDestPath)
+		return fmt.Errorf("Could not copy %s to %s", aiSrcPath, aiDestPath)
 	}
 
-	player := RunnablePlayer{
-		PlayerPath: playerDestPath,
-		AIPath:     aiDestPath,
-	}
-	return &player, nil
+	p.playerPath = playerDestPath
+	p.aiPath = aiDestPath
+	return nil
 }
 
-func (p *RunnablePlayer) Run(useSandbox bool) error {
-	cmd := exec.Command("go", "run", p.PlayerPath, p.AIPath)
-	if useSandbox {
+func (p *Player) launchProcess(config *Configuration) error {
+	cmd := exec.Command("go", "run", p.playerPath, p.aiPath)
+	if config.UseSandbox {
 		cmd.Env = os.Environ()
 		cmd.Env = append(cmd.Env, "GOOS=nacl")
 		cmd.Env = append(cmd.Env, "GOARCH=amd64p32")
@@ -93,7 +101,17 @@ func (p *RunnablePlayer) Run(useSandbox bool) error {
 
 	p.responseChan = make(chan []byte, 1)
 
-	if err = cmd.Start(); err != nil {
+	return cmd.Start()
+}
+
+func (p *Player) Run(config *Configuration) error {
+	err := p.setupFiles(config)
+	if err != nil {
+		return err
+	}
+
+	err = p.launchProcess(config)
+	if err != nil {
 		return err
 	}
 
@@ -112,15 +130,20 @@ func (p *RunnablePlayer) Run(useSandbox bool) error {
 	return err
 }
 
-func (p *RunnablePlayer) Terminate() error {
-	return p.cmd.Process.Kill()
+func (p *Player) CleanUp() error {
+	// First wipe out the tmp dir where we copied everything.
+	err1 := os.RemoveAll(filepath.Dir(p.playerPath))
+
+	// Kill the process (if it didn't die already due to error).
+	err2 := p.cmd.Process.Kill()
+
+	if err1 != nil {
+		return err1
+	}
+	return err2
 }
 
-func (p *RunnablePlayer) CleanUp() error {
-	return os.RemoveAll(filepath.Dir(p.PlayerPath))
-}
-
-func (p *RunnablePlayer) SendMessage(messageJSON []byte) ([]byte, error) {
+func (p *Player) SendMessage(messageJSON []byte) ([]byte, error) {
 	_, err := io.WriteString(*p.cmdStdin, fmt.Sprintf("%s\n", messageJSON))
 	if err != nil {
 		return []byte{}, err
@@ -141,7 +164,7 @@ func (p *RunnablePlayer) SendMessage(messageJSON []byte) ([]byte, error) {
 	return response, err
 }
 
-func (p *RunnablePlayer) readResponseAsync() {
+func (p *Player) readResponseAsync() {
 	response, err := p.cmdStdout.ReadBytes('\n')
 	if err != nil && err != io.EOF {
 		// TODO how to communicate this error?
@@ -149,15 +172,20 @@ func (p *RunnablePlayer) readResponseAsync() {
 		return
 	}
 
-	// Chop off the newline
-	p.responseChan <- response[:len(response)-1]
+	// Chop off the newline, if there is one.
+	responseLen := len(response)
+	if responseLen >= 1 && response[responseLen-1] == '\n' {
+		response = response[:responseLen-1]
+	}
+
+	p.responseChan <- response
 }
 
-func (p *RunnablePlayer) Stderr() string {
+func (p *Player) Stderr() string {
 	buf := *p.cmdStderr
 	return buf.String()
 }
 
-func (p *RunnablePlayer) String() string {
-	return p.AIPath
+func (p *Player) String() string {
+	return p.fileName
 }

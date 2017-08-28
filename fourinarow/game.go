@@ -15,13 +15,17 @@ type Game struct {
 }
 
 func NewGame() *Game {
-	game := Game{
-		Players: make([]*Player, 2),
-		Board:   &Board{},
-		Moves:   []MoveLog{},
+	g := Game{
+		Players: []*Player{},
 	}
+	g.Reset()
+	return &g
+}
 
-	return &game
+func (g *Game) Reset() {
+	g.Board = &Board{}
+	g.Moves = []MoveLog{}
+	g.Winner = nil
 }
 
 func (g *Game) Play() error {
@@ -30,16 +34,21 @@ func (g *Game) Play() error {
 		return err
 	}
 
+	// Wipe out any previous state
+	g.Reset()
+
 	g.ShufflePlayers()
 
 	// Launch the player processes
 	for _, player := range g.Players {
-		err = player.Run(config.UseSandbox)
+		// This copies files to a tmp dir, runs it, and sends a heartbeat message to verify.
+		err = player.Run(config)
 		if err != nil {
 			return fmt.Errorf("player %s failed to run, err: %s", player, err)
 		}
-		defer player.Terminate()
+		defer player.CleanUp()
 
+		// This initializes the game state for this player.
 		err = player.Setup(g)
 		if err != nil {
 			return fmt.Errorf("player %s failed to setup, err: %s", player, err)
@@ -74,6 +83,15 @@ func (g *Game) Play() error {
 	}
 
 	return nil
+}
+
+func (g *Game) AddPlayer(name string) {
+	basePlayer := game.NewPlayer("fourinarow", name)
+	player := Player{
+		Name:   name,
+		Player: *basePlayer,
+	}
+	g.Players = append(g.Players, &player)
 }
 
 func (g *Game) ShufflePlayers() {
