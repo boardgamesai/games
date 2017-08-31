@@ -62,13 +62,13 @@ func (g *Game) Play() error {
 		player := g.Players[playerTurn]
 		move, err := player.GetMove(g)
 		if err != nil {
-			g.Winner = g.Players[playerTurn^1]
+			g.Winner = g.OtherPlayer(player)
 			return fmt.Errorf("player %s failed to get move, err: %s stderr: %s", player, err, player.Stderr())
 		}
 
 		err = g.Board.IsValidMove(move)
 		if err != nil {
-			g.Winner = g.Players[playerTurn^1]
+			g.Winner = g.OtherPlayer(player)
 			return fmt.Errorf("player %s committed invalid move: %s err: %s", player, move, err)
 		}
 
@@ -80,8 +80,7 @@ func (g *Game) Play() error {
 			break
 		}
 
-		// Bitwise XOR with 1 flips 0 -> 1 and 1 -> 0
-		playerTurn = playerTurn ^ 1
+		playerTurn = util.Increment(playerTurn, 0, 1)
 	}
 
 	return nil
@@ -97,17 +96,13 @@ func (g *Game) AddPlayer(name string) {
 }
 
 func (g *Game) ShufflePlayers() {
-	if util.CoinFlip() {
-		temp := g.Players[0]
-		g.Players[0] = g.Players[1]
-		g.Players[1] = temp
-	}
-	for i := 1; i <= 2; i++ {
-		g.Players[i-1].Order = i
-	}
+	util.Shuffle(g.Players)
 
-	g.Players[0].Symbol = "X"
-	g.Players[1].Symbol = "O"
+	symbols := []string{"X", "O"}
+	for i := 0; i < 2; i++ {
+		g.Players[i].Order = i + 1
+		g.Players[i].Symbol = symbols[i]
+	}
 }
 
 // GetNewMovesForPlayer crawls the move log and finds all the moves since p's last move
@@ -122,6 +117,13 @@ func (g *Game) GetNewMovesForPlayer(p *Player) []MoveLog {
 	}
 
 	return moves
+}
+
+func (g *Game) OtherPlayer(player *Player) *Player {
+	if g.Players[0] == player {
+		return g.Players[1]
+	}
+	return g.Players[0]
 }
 
 func (g *Game) String() string {

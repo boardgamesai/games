@@ -6,7 +6,17 @@ import (
 	"io"
 	"math/big"
 	"os"
+	"reflect"
 )
+
+// Increment handles incrementing a value that wraps around
+func Increment(current, min, max int) int {
+	if current == max {
+		return min
+	}
+
+	return current + 1
+}
 
 // RandInt returns a random int in the range [min, max]
 func RandInt(min, max int) int {
@@ -19,9 +29,17 @@ func RandInt(min, max int) int {
 	return int(randInt.Int64()) + min
 }
 
-// CoinFlip is syntactic sugar for picking a random 0 or 1
-func CoinFlip() bool {
-	return RandInt(0, 1) == 1
+// Shuffle random sorts a slice using the Fisher-Yates algorithm.
+// It panics if you pass it something other than a slice.
+// Code mostly copied from sort.Slice().
+func Shuffle(slice interface{}) {
+	rv := reflect.ValueOf(slice)
+	maxlen := rv.Len() - 1 // -1 because the last element can only be swapped with itself
+	swap := reflect.Swapper(slice)
+
+	for i := 0; i < maxlen; i++ {
+		swap(i, RandInt(i, maxlen))
+	}
 }
 
 // CopyFile copies a file from source to dest
