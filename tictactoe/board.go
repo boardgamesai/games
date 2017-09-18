@@ -32,6 +32,16 @@ func (b *Board) IsValidMove(m Move) error {
 	return nil
 }
 
+func (b *Board) ApplyMove(p *Player, m Move) error {
+	err := b.IsValidMove(m)
+	if err != nil {
+		return err
+	}
+
+	b.Grid[m.Col][m.Row] = p.Symbol
+	return nil
+}
+
 func (b *Board) HasWinner() bool {
 	// Check rows & columns
 	for i := 0; i < 3; i++ {
