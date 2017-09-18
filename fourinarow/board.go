@@ -114,6 +114,12 @@ func (b *Board) PossibleMoves() []Move {
 	return moves
 }
 
+func (b *Board) DeepCopy() *Board {
+	newBoard := Board{}
+	newBoard.Grid = b.Grid
+	return &newBoard
+}
+
 func (b *Board) String() string {
 	str := ""
 

@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/boardgamesai/games/tictactoe"
+	"github.com/boardgamesai/games/fourinarow"
 	"github.com/boardgamesai/games/util"
 )
 
-func GetMove(state *tictactoe.State) tictactoe.Move {
+func GetMove(state *fourinarow.State) fourinarow.Move {
 	allMoves := state.Board.PossibleMoves()
 	for _, move := range allMoves {
 		// See if the opponent playing this move would be a win for them.

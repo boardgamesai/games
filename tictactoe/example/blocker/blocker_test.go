@@ -38,8 +38,12 @@ func TestGetMove(t *testing.T) {
 		{"   | X |X  ", 2, 2},
 	}
 
+	opponent := tictactoe.Player{
+		Symbol: "X",
+	}
 	state := tictactoe.State{
-		Symbol: "O",
+		Symbol:   "O",
+		Opponent: &opponent,
 	}
 
 	for _, test := range tests {
