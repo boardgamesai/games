@@ -1,9 +1,9 @@
 package tictactoe
 
 type MessageSetup struct {
-	Symbol  string
-	Order   int
-	Players []*Player
+	Symbol   string
+	Order    int
+	Opponent *Player
 }
 
 type MessageMove struct {

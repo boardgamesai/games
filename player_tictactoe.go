@@ -31,12 +31,9 @@ func main() {
 	fmt.Printf("OK\n")
 
 	state := tictactoe.State{
-		Symbol:  message.Symbol,
-		Order:   message.Order,
-		Players: []tictactoe.Player{},
-	}
-	for _, player := range message.Players {
-		state.Players = append(state.Players, *player)
+		Symbol:   message.Symbol,
+		Order:    message.Order,
+		Opponent: message.Opponent,
 	}
 
 	for {

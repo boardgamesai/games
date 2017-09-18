@@ -16,8 +16,8 @@ type Player struct {
 
 func (p *Player) Setup(g *Game) error {
 	message := MessageSetup{
-		Order:   p.Order,
-		Players: g.Players,
+		Order:    p.Order,
+		Opponent: g.OtherPlayer(p),
 	}
 	messageJSON, err := json.Marshal(&message)
 	if err != nil {

@@ -31,11 +31,8 @@ func main() {
 	fmt.Printf("OK\n")
 
 	state := fourinarow.State{
-		Order:   message.Order,
-		Players: []fourinarow.Player{},
-	}
-	for _, player := range message.Players {
-		state.Players = append(state.Players, *player)
+		Order:    message.Order,
+		Opponent: message.Opponent,
 	}
 
 	for {

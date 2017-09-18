@@ -1,8 +1,8 @@
 package fourinarow
 
 type MessageSetup struct {
-	Order   int
-	Players []*Player
+	Order    int
+	Opponent *Player
 }
 
 type MessageMove struct {
