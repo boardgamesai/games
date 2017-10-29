@@ -32,9 +32,5 @@ func (d *AIDriver) GetNextMessage() (Message, error) {
 
 	// Convert JSON to Message
 	err = json.Unmarshal([]byte(messageJSON), &message)
-	if err != nil {
-		return message, err
-	}
-
-	return message, nil
+	return message, err
 }
