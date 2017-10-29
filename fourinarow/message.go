@@ -1,5 +1,10 @@
 package fourinarow
 
+const (
+	MessageTypeSetup = "setup"
+	MessageTypeMove  = "move"
+)
+
 type MessageSetup struct {
 	Order    int
 	Opponent *Player

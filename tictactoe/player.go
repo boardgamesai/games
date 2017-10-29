@@ -26,7 +26,7 @@ func (p *Player) Setup(g *Game) error {
 		return err
 	}
 
-	response, err := p.SendMessage(messageJSON)
+	response, err := p.SendMessage(MessageTypeSetup, messageJSON)
 	if err != nil {
 		return err
 	}
@@ -47,7 +47,7 @@ func (p *Player) GetMove(g *Game) (Move, error) {
 		return Move{}, err
 	}
 
-	responseJSON, err := p.SendMessage(messageJSON)
+	responseJSON, err := p.SendMessage(MessageTypeMove, messageJSON)
 	if err != nil {
 		return Move{}, err
 	}

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/boardgamesai/games/tictactoe"
+	"github.com/boardgamesai/games/tictactoe/ai/driver"
 )
 
 func TestGetMove(t *testing.T) {
@@ -41,14 +42,16 @@ func TestGetMove(t *testing.T) {
 	opponent := tictactoe.Player{
 		Symbol: "X",
 	}
-	state := tictactoe.State{
+	state := driver.State{
 		Symbol:   "O",
 		Opponent: &opponent,
 	}
 
+	ai := AI{}
+
 	for _, test := range tests {
 		state.Board = tictactoe.GetBoardFromString(test.boardStr)
-		move := GetMove(&state)
+		move := ai.GetMove(state)
 		if move.Col != test.expectedCol || move.Row != test.expectedRow {
 			t.Errorf("Blocker GetMove board: %s expected: [%d,%d] got: %s", test.boardStr, test.expectedCol, test.expectedRow, move)
 		}

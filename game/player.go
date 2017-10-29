@@ -3,12 +3,12 @@ package game
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"time"
 
 	"github.com/boardgamesai/games/util"
@@ -23,8 +23,7 @@ const (
 type Player struct {
 	gameName     string
 	fileName     string // Non-absolute filename of stored user-written code
-	playerPath   string // The runnable boardgamesAI-provided driver
-	aiPath       string // The runnable code the user writes
+	runDir       string // The tmp dir where this player is running
 	cmd          *exec.Cmd
 	cmdStdin     *io.WriteCloser
 	cmdStdout    *bufio.Reader
@@ -53,29 +52,28 @@ func (p *Player) setupFiles(config *Configuration) error {
 	if err != nil {
 		return fmt.Errorf("Could not create tmp dir: %s for player: %s err: %s", tmpDir, p.fileName, err)
 	}
+	p.runDir = tmpDir
 
-	// Next copy over the base player file
-	playerFile := "player_" + p.gameName + ".go"
-	playerDestPath := tmpDir + "/" + playerFile
-	err = util.CopyFile(playerFile, playerDestPath)
+	// Next copy over the main driver file
+	srcPath := p.gameName + "/ai/main.go"
+	destPath := tmpDir + "/main.go"
+	err = util.CopyFile(srcPath, destPath)
 	if err != nil {
-		return fmt.Errorf("Could not copy %s to %s", playerFile, playerDestPath)
+		return fmt.Errorf("Could not copy %s to %s", srcPath, destPath)
 	}
 
 	// Now copy over the AI-specific file
-	aiDestPath := tmpDir + "/" + p.fileName + ".go"
+	aiDestPath := tmpDir + "/ai.go"
 	err = util.CopyFile(aiSrcPath, aiDestPath)
 	if err != nil {
 		return fmt.Errorf("Could not copy %s to %s", aiSrcPath, aiDestPath)
 	}
 
-	p.playerPath = playerDestPath
-	p.aiPath = aiDestPath
 	return nil
 }
 
 func (p *Player) launchProcess(config *Configuration) error {
-	cmd := exec.Command("go", "run", p.playerPath, p.aiPath)
+	cmd := exec.Command("go", "run", p.runDir+"/main.go", p.runDir+"/ai.go")
 	if config.UseSandbox {
 		cmd.Env = os.Environ()
 		cmd.Env = append(cmd.Env, "GOOS=nacl")
@@ -132,7 +130,7 @@ func (p *Player) Run(config *Configuration) error {
 
 func (p *Player) CleanUp() error {
 	// First wipe out the tmp dir where we copied everything.
-	err1 := os.RemoveAll(filepath.Dir(p.playerPath))
+	err1 := os.RemoveAll(p.runDir)
 
 	// Kill the process (if it didn't die already due to error).
 	err2 := p.cmd.Process.Kill()
@@ -143,8 +141,18 @@ func (p *Player) CleanUp() error {
 	return err2
 }
 
-func (p *Player) SendMessage(messageJSON []byte) ([]byte, error) {
-	_, err := io.WriteString(*p.cmdStdin, fmt.Sprintf("%s\n", messageJSON))
+func (p *Player) SendMessage(messageType string, data []byte) ([]byte, error) {
+	// The JSON we get is a game-specific message, which we wrap in our generic message.
+	message := Message{
+		Type: messageType,
+		Data: data,
+	}
+	messageJSON, err := json.Marshal(&message)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	_, err = io.WriteString(*p.cmdStdin, fmt.Sprintf("%s\n", messageJSON))
 	if err != nil {
 		return []byte{}, err
 	}

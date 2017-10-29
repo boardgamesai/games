@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/boardgamesai/games/fourinarow"
+	"github.com/boardgamesai/games/fourinarow/ai/driver"
 )
 
 func TestGetMove(t *testing.T) {
@@ -65,17 +66,19 @@ func TestGetMove(t *testing.T) {
 	opponent := fourinarow.Player{
 		Order: 1,
 	}
-	state := fourinarow.State{
+	state := driver.State{
 		Order:    2,
 		Opponent: &opponent,
 	}
 
 	re := regexp.MustCompile(`\s+`)
 
+	ai := AI{}
+
 	for _, test := range tests {
 		boardStr := re.ReplaceAllString(test.boardStr, "|")
 		state.Board = fourinarow.GetBoardFromString(boardStr)
-		move := GetMove(&state)
+		move := ai.GetMove(state)
 		if move.Col != test.expected {
 			t.Errorf("Blocker GetMove board: %s expected: %d got: %s", boardStr, test.expected, move)
 		}
