@@ -19,17 +19,12 @@ func (p *Player) Setup(g *Game) error {
 		Order:    p.Order,
 		Opponent: g.OtherPlayer(p),
 	}
-	messageJSON, err := json.Marshal(&message)
-	if err != nil {
-		return err
-	}
-
-	response, err := p.SendMessage(MessageTypeSetup, messageJSON)
+	response, err := p.SendMessage(message)
 	if err != nil {
 		return err
 	}
 	if string(response) != "OK" {
-		return fmt.Errorf("Got non-OK response when setting up player: %s err: %s", p.Name, err)
+		return fmt.Errorf("Got non-OK response when setting up player: %s response: %s stderr:", p.Name, response, p.Stderr())
 	}
 
 	return nil
@@ -40,12 +35,7 @@ func (p *Player) GetMove(g *Game) (Move, error) {
 		Board:    GetStringFromBoard(g.Board),
 		NewMoves: g.GetNewMovesForPlayer(p),
 	}
-	messageJSON, err := json.Marshal(&message)
-	if err != nil {
-		return Move{}, err
-	}
-
-	responseJSON, err := p.SendMessage(MessageTypeMove, messageJSON)
+	responseJSON, err := p.SendMessage(message)
 	if err != nil {
 		return Move{}, err
 	}

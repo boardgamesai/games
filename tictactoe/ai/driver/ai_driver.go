@@ -34,9 +34,9 @@ func (d *AIDriver) Run() {
 		response := ""
 
 		switch message.Type {
-		case tictactoe.MessageTypeSetup:
+		case "setup":
 			response, err = d.handleSetup(message.Data)
-		case tictactoe.MessageTypeMove:
+		case "move":
 			response, err = d.handleMove(message.Data)
 		default:
 			log.Fatalf("Unknown message type: %s", message.Type)

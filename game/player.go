@@ -9,6 +9,8 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"reflect"
+	"strings"
 	"time"
 
 	"github.com/boardgamesai/games/util"
@@ -141,18 +143,24 @@ func (p *Player) CleanUp() error {
 	return err2
 }
 
-func (p *Player) SendMessage(messageType string, data []byte) ([]byte, error) {
-	// The JSON we get is a game-specific message, which we wrap in our generic message.
-	message := Message{
-		Type: messageType,
-		Data: data,
-	}
-	messageJSON, err := json.Marshal(&message)
+// Our messages have two lines. First line is the type, second line is the JSON-encoded payload.
+func (p *Player) SendMessage(data interface{}) ([]byte, error) {
+	// Let's use reflection to get the type of this message
+	messageType := reflect.TypeOf(data).Name()
+	// Hack off the "Message" on the front and lowercase it
+	messageType = strings.ToLower(messageType[7:])
+
+	dataJSON, err := json.Marshal(&data)
 	if err != nil {
 		return []byte{}, err
 	}
 
-	_, err = io.WriteString(*p.cmdStdin, fmt.Sprintf("%s\n", messageJSON))
+	err = p.writeLine(messageType)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	err = p.writeLine(string(dataJSON))
 	if err != nil {
 		return []byte{}, err
 	}
@@ -170,6 +178,11 @@ func (p *Player) SendMessage(messageType string, data []byte) ([]byte, error) {
 	}
 
 	return response, err
+}
+
+func (p *Player) writeLine(line string) error {
+	_, err := io.WriteString(*p.cmdStdin, fmt.Sprintf("%s\n", line))
+	return err
 }
 
 func (p *Player) readResponseAsync() {

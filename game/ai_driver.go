@@ -2,7 +2,6 @@ package game
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -22,15 +21,22 @@ func (d *AIDriver) Setup() {
 }
 
 func (d *AIDriver) GetNextMessage() (Message, error) {
-	message := Message{}
-
-	// Get raw JSON from stdin
-	messageJSON, err := d.stdin.ReadString('\n')
+	// First line is the type
+	messageType, err := d.stdin.ReadString('\n')
 	if err != nil && err != io.EOF {
-		return message, err
+		return Message{}, err
+	}
+	messageType = messageType[:len(messageType)-1] // Remove trailing newline, ReadString() includes it
+
+	// Second line is the JSON payload
+	messageJSON, err := d.stdin.ReadBytes('\n')
+	if err != nil && err != io.EOF {
+		return Message{}, err
 	}
 
-	// Convert JSON to Message
-	err = json.Unmarshal([]byte(messageJSON), &message)
-	return message, err
+	message := Message{
+		Type: messageType,
+		Data: messageJSON,
+	}
+	return message, nil
 }
