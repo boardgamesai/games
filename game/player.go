@@ -16,8 +16,8 @@ import (
 )
 
 const (
-	PlayerLaunchTimeout = 30
-	PlayerMoveTimeout   = 15
+	PlayerLaunchTimeout   = 30
+	PlayerResponseTimeout = 15
 )
 
 type Player struct {
@@ -165,8 +165,8 @@ func (p *Player) SendMessage(messageType string, data []byte) ([]byte, error) {
 	select {
 	case response = <-p.responseChan:
 		// Do nothing, the assignment above is the important thing
-	case <-time.After(time.Second * PlayerMoveTimeout):
-		err = fmt.Errorf("Timeout reading player move response")
+	case <-time.After(time.Second * PlayerResponseTimeout):
+		err = fmt.Errorf("Timeout reading player response")
 	}
 
 	return response, err
