@@ -41,12 +41,13 @@ func (g *Game) Play() error {
 
 	// Launch the player processes
 	for _, player := range g.Players {
+		defer player.CleanUp()
+
 		// This copies files to a tmp dir, runs it, and sends a heartbeat message to verify.
 		err = player.Run(config)
 		if err != nil {
 			return fmt.Errorf("player %s failed to run, err: %s", player, err)
 		}
-		defer player.CleanUp()
 
 		// This initializes the game state for this player.
 		err = player.Setup(g)
