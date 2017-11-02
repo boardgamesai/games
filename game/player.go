@@ -147,6 +147,10 @@ func (p *Player) CleanUp() error {
 func (p *Player) SendMessage(data interface{}) ([]byte, error) {
 	// Let's use reflection to get the type of this message
 	messageType := reflect.TypeOf(data).Name()
+	if messageType[0:7] != "Message" {
+		return []byte{}, fmt.Errorf("Invalid type %s passed to SendMessage", messageType)
+	}
+
 	// Hack off the "Message" on the front and lowercase it
 	messageType = strings.ToLower(messageType[7:])
 
