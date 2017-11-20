@@ -31,7 +31,7 @@ func (b *Board) IsValidMove(m Move) error {
 	return nil
 }
 
-func (b *Board) ApplyMove(player int, m Move) error {
+func (b *Board) ApplyMove(order int, m Move) error {
 	err := b.IsValidMove(m)
 	if err != nil {
 		return err
@@ -39,7 +39,7 @@ func (b *Board) ApplyMove(player int, m Move) error {
 
 	for i := 0; i < 6; i++ {
 		if b.Grid[m.Col][i] == Empty {
-			b.Grid[m.Col][i] = player
+			b.Grid[m.Col][i] = order
 			break
 		}
 	}
