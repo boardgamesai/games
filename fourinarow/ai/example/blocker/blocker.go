@@ -14,7 +14,7 @@ func (ai *AI) GetMove(state driver.State) fourinarow.Move {
 		// See if the opponent playing this move would be a win for them.
 		// We test on a copy of the board so we don't taint it for future moves (there is no UnapplyMove).
 		board := state.Board.DeepCopy()
-		board.ApplyMove(state.Order, move) // Ignore error because we know it's a possible move
+		board.ApplyMove(state.Opponent.Order, move) // Ignore error because we know it's a possible move
 		if board.HasWinner() {
 			// We must block this move!
 			return move

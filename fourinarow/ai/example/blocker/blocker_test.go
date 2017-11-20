@@ -6,6 +6,7 @@ import (
 
 	"github.com/boardgamesai/games/fourinarow"
 	"github.com/boardgamesai/games/fourinarow/ai/driver"
+	"github.com/boardgamesai/games/game"
 )
 
 func TestGetMove(t *testing.T) {
@@ -64,7 +65,9 @@ func TestGetMove(t *testing.T) {
 	}
 
 	opponent := fourinarow.Player{
-		Order: 1,
+		Player: game.Player{
+			Order: 1,
+		},
 	}
 	state := driver.State{
 		Order:    2,
