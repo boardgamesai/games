@@ -1,5 +1,7 @@
 package tictactoe
 
+import "github.com/boardgamesai/games/game"
+
 type MessageSetup struct {
 	Symbol   string
 	Order    int
@@ -7,6 +9,5 @@ type MessageSetup struct {
 }
 
 type MessageMove struct {
-	Board    string
-	NewMoves []MoveLog
+	NewEvents []game.Event
 }

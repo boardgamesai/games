@@ -32,13 +32,13 @@ func (b *Board) IsValidMove(m Move) error {
 	return nil
 }
 
-func (b *Board) ApplyMove(p *Player, m Move) error {
+func (b *Board) ApplyMove(symbol string, m Move) error {
 	err := b.IsValidMove(m)
 	if err != nil {
 		return err
 	}
 
-	b.Grid[m.Col][m.Row] = p.Symbol
+	b.Grid[m.Col][m.Row] = symbol
 	return nil
 }
 

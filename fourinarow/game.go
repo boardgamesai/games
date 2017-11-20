@@ -1,6 +1,7 @@
 package fourinarow
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/boardgamesai/games/game"
@@ -8,24 +9,21 @@ import (
 )
 
 type Game struct {
-	Players []*Player
-	Board   *Board
-	Moves   []MoveLog
-	Winner  *Player
+	game.Game
+	players []*Player
+	board   *Board
 }
 
-func NewGame() *Game {
+func New() *Game {
 	g := Game{
-		Players: []*Player{},
+		players: []*Player{},
 	}
-	g.Reset()
+	g.reset()
 	return &g
 }
 
-func (g *Game) Reset() {
-	g.Board = &Board{}
-	g.Moves = []MoveLog{}
-	g.Winner = nil
+func (g *Game) NumPlayers() int {
+	return 2
 }
 
 func (g *Game) Play() error {
@@ -35,12 +33,11 @@ func (g *Game) Play() error {
 	}
 
 	// Wipe out any previous state
-	g.Reset()
-
-	g.ShufflePlayers()
+	g.reset()
+	g.shufflePlayers()
 
 	// Launch the player processes
-	for _, player := range g.Players {
+	for _, player := range g.players {
 		defer player.CleanUp()
 
 		// This copies files to a tmp dir, runs it, and sends a heartbeat message to verify.
@@ -50,7 +47,7 @@ func (g *Game) Play() error {
 		}
 
 		// This initializes the game state for this player.
-		err = player.Setup(g)
+		err = player.Setup(g.otherPlayer(player))
 		if err != nil {
 			return fmt.Errorf("player %s failed to setup, err: %s", player, err)
 		}
@@ -58,28 +55,37 @@ func (g *Game) Play() error {
 
 	// Game is over when someone wins or board is filled
 	playerTurn := 0
-	for !g.Board.IsFull() {
-		player := g.Players[playerTurn]
-		move, err := player.GetMove(g)
+	for !g.board.IsFull() {
+		player := g.players[playerTurn]
+		move, err := player.GetMove(g.EventLog.NewForPlayer(player.Order))
 		if err != nil {
-			g.Winner = g.OtherPlayer(player)
+			g.setWinner(g.otherPlayer(player))
 			return fmt.Errorf("player %s failed to get move, err: %s stderr: %s", player, err, player.Stderr())
 		}
 
-		err = g.Board.ApplyMove(player, move)
+		err = g.board.ApplyMove(player.Order, move)
 		if err != nil {
-			g.Winner = g.OtherPlayer(player)
+			g.setWinner(g.otherPlayer(player))
 			return fmt.Errorf("player %s committed invalid move: %s err: %s", player, move, err)
 		}
 
-		g.Moves = append(g.Moves, MoveLog{Move: move, Order: player.Order})
+		e := EventMove{
+			Order: player.Order,
+			Move:  move,
+		}
+		g.EventLog.Add(e, []int{-1})
 
-		if g.Board.HasWinner() {
-			g.Winner = player
+		if g.board.HasWinner() {
+			g.setWinner(player)
 			break
 		}
 
 		playerTurn = util.Increment(playerTurn, 0, 1)
+	}
+
+	if len(g.Places()) == 0 {
+		// No winner, so this is a tie.
+		g.setWinner(nil)
 	}
 
 	return nil
@@ -88,41 +94,77 @@ func (g *Game) Play() error {
 func (g *Game) AddPlayer(name string) {
 	basePlayer := game.NewPlayer("fourinarow", name)
 	player := Player{
-		Name:   name,
 		Player: *basePlayer,
 	}
-	g.Players = append(g.Players, &player)
+	g.players = append(g.players, &player)
 }
 
-func (g *Game) ShufflePlayers() {
-	util.Shuffle(g.Players)
+func (g *Game) Players() []*game.Player {
+	if len(g.PlayersCached) == 0 {
+		for _, player := range g.players {
+			g.PlayersCached = append(g.PlayersCached, &(player.Player))
+		}
+	}
+	return g.PlayersCached
+}
+
+func (g *Game) Events() []fmt.Stringer {
+	events := make([]fmt.Stringer, len(g.EventLog))
+
+	for i, event := range g.EventLog {
+		var eStr fmt.Stringer
+
+		switch event.Type {
+		case EventTypeMove:
+			e := EventMove{}
+			json.Unmarshal(event.Data, &e)
+			eStr = e
+		}
+
+		events[i] = eStr
+	}
+
+	return events
+}
+
+func (g *Game) reset() {
+	g.Game.Reset()
+	g.board = &Board{}
+}
+
+func (g *Game) setWinner(p *Player) {
+	places := []game.Place{}
+
+	if p == nil {
+		places = []game.Place{
+			{Player: g.players[0].Player, Rank: 1, Tie: true},
+			{Player: g.players[1].Player, Rank: 1, Tie: true},
+		}
+	} else {
+		places = []game.Place{
+			{Player: p.Player, Rank: 1, Tie: false},
+			{Player: g.otherPlayer(p).Player, Rank: 2, Tie: false},
+		}
+	}
+
+	g.SetPlaces(places)
+}
+
+func (g *Game) shufflePlayers() {
+	util.Shuffle(g.players)
 
 	for i := 0; i < 2; i++ {
-		g.Players[i].Order = i + 1
+		g.players[i].Order = i + 1
 	}
 }
 
-func (g *Game) OtherPlayer(player *Player) *Player {
-	if g.Players[0] == player {
-		return g.Players[1]
+func (g *Game) otherPlayer(player *Player) *Player {
+	if g.players[0] == player {
+		return g.players[1]
 	}
-	return g.Players[0]
-}
-
-// GetNewMovesForPlayer crawls the move log and finds all the moves since p's last move
-func (g *Game) GetNewMovesForPlayer(p *Player) []MoveLog {
-	moves := []MoveLog{}
-
-	for i := len(g.Moves) - 1; i >= 0; i-- {
-		if g.Moves[i].Order == p.Order {
-			break
-		}
-		moves = append([]MoveLog{g.Moves[i]}, moves...)
-	}
-
-	return moves
+	return g.players[0]
 }
 
 func (g *Game) String() string {
-	return fmt.Sprintf("%s", g.Board)
+	return fmt.Sprintf("%s", g.board)
 }

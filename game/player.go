@@ -23,6 +23,9 @@ const (
 )
 
 type Player struct {
+	ID           string
+	Name         string
+	Order        int // 1-based
 	gameName     string
 	fileName     string // Non-absolute filename of stored user-written code
 	runDir       string // The tmp dir where this player is running
@@ -35,6 +38,8 @@ type Player struct {
 
 func NewPlayer(gameName string, playerName string) *Player {
 	player := Player{
+		ID:       uuid.NewRandom().String(), // HACK - TODO use actual IDs
+		Name:     playerName,                // This won't always be same as fileName
 		gameName: gameName,
 		fileName: playerName,
 	}

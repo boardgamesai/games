@@ -1,11 +1,13 @@
 package driver
 
-import "github.com/boardgamesai/games/fourinarow"
+import (
+	"github.com/boardgamesai/games/fourinarow"
+	"github.com/boardgamesai/games/game"
+)
 
 type State struct {
 	Order    int // Order of this player
 	Opponent *fourinarow.Player
 	Board    *fourinarow.Board
-	AllMoves []fourinarow.MoveLog
-	NewMoves []fourinarow.MoveLog
+	game.State
 }

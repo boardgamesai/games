@@ -17,8 +17,10 @@ type AIDriver struct {
 
 func New(ai tictactoeAI) *AIDriver {
 	return &AIDriver{
-		state: &State{},
-		ai:    ai,
+		state: &State{
+			Board: &tictactoe.Board{},
+		},
+		ai: ai,
 	}
 }
 
@@ -70,19 +72,17 @@ func (d *AIDriver) handleMove(message []byte) (string, error) {
 		return "", fmt.Errorf("JSON decode failed: %s err: %s", message, err)
 	}
 
-	d.state.Board = tictactoe.GetBoardFromString(moveMessage.Board)
-	d.state.NewMoves = moveMessage.NewMoves
-	d.state.AllMoves = append(d.state.AllMoves, moveMessage.NewMoves...)
+	// Apply all our move events to keep the board up to date
+	for _, event := range moveMessage.NewEvents {
+		if event.Type == tictactoe.EventTypeMove { // This is our only event type, at least for now
+			e := tictactoe.EventMove{}
+			json.Unmarshal(event.Data, &e)
+			d.state.Board.ApplyMove(e.Symbol, e.Move)
+		}
+	}
+	d.state.AddEvents(moveMessage.NewEvents)
 
 	move := d.ai.GetMove(*d.state)
-
-	// Add new move to our state immediately - we don't get our own moves in NewMoves
-	moveLog := tictactoe.MoveLog{
-		Move:  move,
-		Order: d.state.Order,
-	}
-	d.state.AllMoves = append(d.state.AllMoves, moveLog)
-
 	moveJSON, err := json.Marshal(&move)
 	if err != nil {
 		return "", fmt.Errorf("JSON encode failed: %+v err: %s", move, err)

@@ -8,16 +8,13 @@ import (
 )
 
 type Player struct {
-	ID    string
-	Name  string
-	Order int // 1-based
 	game.Player
 }
 
-func (p *Player) Setup(g *Game) error {
+func (p *Player) Setup(other *Player) error {
 	message := MessageSetup{
 		Order:    p.Order,
-		Opponent: g.OtherPlayer(p),
+		Opponent: other,
 	}
 	response, err := p.SendMessage(message)
 	if err != nil {
@@ -30,17 +27,17 @@ func (p *Player) Setup(g *Game) error {
 	return nil
 }
 
-func (p *Player) GetMove(g *Game) (Move, error) {
+func (p *Player) GetMove(newEvents []game.Event) (Move, error) {
+	move := Move{}
+
 	message := MessageMove{
-		Board:    GetStringFromBoard(g.Board),
-		NewMoves: g.GetNewMovesForPlayer(p),
+		NewEvents: newEvents,
 	}
 	responseJSON, err := p.SendMessage(message)
 	if err != nil {
-		return Move{}, err
+		return move, err
 	}
 
-	move := Move{}
 	err = json.Unmarshal(responseJSON, &move)
 	return move, err
 }
