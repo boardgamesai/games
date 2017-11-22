@@ -76,7 +76,7 @@ func (g *Game) Play() error {
 			Symbol: player.Symbol,
 			Move:   move,
 		}
-		g.EventLog.Add(e, []int{-1})
+		g.EventLog.Add(e, game.AllPlayers)
 
 		if g.board.HasWinner() {
 			g.setWinner(player)

@@ -73,7 +73,7 @@ func (g *Game) Play() error {
 			Order: player.Order,
 			Move:  move,
 		}
-		g.EventLog.Add(e, []int{-1})
+		g.EventLog.Add(e, game.AllPlayers)
 
 		if g.board.HasWinner() {
 			g.setWinner(player)

@@ -301,7 +301,7 @@ func (g *Game) playRound() error {
 		RoundScores: eventScores,
 		TotalScores: totalScores,
 	}
-	g.EventLog.Add(e, []int{-1})
+	g.EventLog.Add(e, game.AllPlayers)
 
 	return nil
 }
@@ -330,7 +330,7 @@ func (g *Game) playTrick(turn int, trickCount int, heartsBroken bool) (int, int,
 			Order: player.Order,
 			Card:  move.Card,
 		}
-		g.EventLog.Add(e, []int{-1})
+		g.EventLog.Add(e, game.AllPlayers)
 	}
 
 	// Now see what the trick is worth and who gets it.
@@ -343,7 +343,7 @@ func (g *Game) playTrick(turn int, trickCount int, heartsBroken bool) (int, int,
 		Order: winner + 1,
 		Score: score,
 	}
-	g.EventLog.Add(e, []int{-1})
+	g.EventLog.Add(e, game.AllPlayers)
 
 	return winner, score, nil
 

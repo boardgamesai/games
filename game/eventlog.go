@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+var AllPlayers = []int{-1}
+
 type EventLog []Event
 
 func (el *EventLog) Add(event interface{}, orders []int) error {
