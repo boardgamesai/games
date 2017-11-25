@@ -44,7 +44,7 @@ func TestAddEventType(t *testing.T) {
 	for i, e := range *l {
 		typeName := fmt.Sprintf("test%d", i+1)
 		if e.Type != typeName {
-			t.Fatalf("Didn't get type %s for event, got: %s", typeName, e.Type)
+			t.Errorf("Didn't get type %s for event, got: %s", typeName, e.Type)
 		}
 	}
 }
