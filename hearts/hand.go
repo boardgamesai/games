@@ -14,13 +14,15 @@ func (h *Hand) Add(c card.Card) {
 }
 
 // Remove has to be on a pointer because we are reassigning the underlying slice.
-func (h *Hand) Remove(c card.Card) {
+func (h *Hand) Remove(c card.Card) bool {
 	for i, handCard := range *h {
 		if handCard == c {
 			*h = append((*h)[:i], (*h)[i+1:]...)
-			return
+			return true
 		}
 	}
+
+	return false
 }
 
 func (h Hand) Contains(c card.Card) bool {

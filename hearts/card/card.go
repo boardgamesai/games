@@ -57,10 +57,19 @@ func New(suit Suit, rank Rank) Card {
 	}
 }
 
+// Index is used to sort/compare cards
 func (c Card) Index() int {
-	return (suitMap[c.Suit] * 13) + rankMap[c.Rank] + 1
+	return (suitMap[c.Suit] * 13) + rankMap[c.Rank]
 }
 
 func (c Card) String() string {
 	return fmt.Sprintf("%s%s", c.Rank, c.Suit)
+}
+
+// FromString takes input like "4C" or "JH" and returns a Card
+func FromString(s string) Card {
+	return Card{
+		Suit: Suit(s[1:]),
+		Rank: Rank(s[0:1]),
+	}
 }
