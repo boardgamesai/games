@@ -46,69 +46,6 @@ func NewPlayer(gameName string, playerName string) *Player {
 	return &player
 }
 
-func (p *Player) setupFiles(config *Configuration) error {
-	// Ensure this player exists
-	aiSrcPath := os.Getenv("GOPATH") + config.PlayerDir + "/" + p.gameName + "/" + p.fileName + "/" + p.fileName + ".go"
-	if _, err := os.Stat(aiSrcPath); os.IsNotExist(err) {
-		return fmt.Errorf("Player file does not exist: %s", aiSrcPath)
-	}
-
-	// First create the tmp dir for the player
-	tmpDir := os.Getenv("GOPATH") + config.TmpDir + "/" + uuid.NewRandom().String()
-	err := os.Mkdir(tmpDir, 0700)
-	if err != nil {
-		return fmt.Errorf("Could not create tmp dir: %s for player: %s err: %s", tmpDir, p.fileName, err)
-	}
-	p.runDir = tmpDir
-
-	// Next copy over the main driver file
-	srcPath := p.gameName + "/ai/main.go"
-	destPath := tmpDir + "/main.go"
-	err = util.CopyFile(srcPath, destPath)
-	if err != nil {
-		return fmt.Errorf("Could not copy %s to %s", srcPath, destPath)
-	}
-
-	// Now copy over the AI-specific file
-	aiDestPath := tmpDir + "/ai.go"
-	err = util.CopyFile(aiSrcPath, aiDestPath)
-	if err != nil {
-		return fmt.Errorf("Could not copy %s to %s", aiSrcPath, aiDestPath)
-	}
-
-	return nil
-}
-
-func (p *Player) launchProcess(config *Configuration) error {
-	cmd := exec.Command("go", "run", p.runDir+"/main.go", p.runDir+"/ai.go")
-	if config.UseSandbox {
-		cmd.Env = os.Environ()
-		cmd.Env = append(cmd.Env, "GOOS=nacl")
-		cmd.Env = append(cmd.Env, "GOARCH=amd64p32")
-	}
-	p.cmd = cmd
-
-	stdin, err := cmd.StdinPipe()
-	if err != nil {
-		return err
-	}
-	p.cmdStdin = &stdin
-
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		return err
-	}
-	p.cmdStdout = bufio.NewReader(stdout)
-
-	var errBuf bytes.Buffer
-	cmd.Stderr = &errBuf
-	p.cmdStderr = &errBuf
-
-	p.responseChan = make(chan []byte, 1)
-
-	return cmd.Start()
-}
-
 func (p *Player) Run(config *Configuration) error {
 	err := p.setupFiles(config)
 	if err != nil {
@@ -189,6 +126,78 @@ func (p *Player) SendMessage(data interface{}) ([]byte, error) {
 	return response, err
 }
 
+func (p *Player) Stderr() string {
+	buf := *p.cmdStderr
+	return buf.String()
+}
+
+func (p *Player) String() string {
+	return p.fileName
+}
+
+func (p *Player) setupFiles(config *Configuration) error {
+	// Ensure this player exists
+	aiSrcPath := os.Getenv("GOPATH") + config.PlayerDir + "/" + p.gameName + "/" + p.fileName + "/" + p.fileName + ".go"
+	if _, err := os.Stat(aiSrcPath); os.IsNotExist(err) {
+		return fmt.Errorf("Player file does not exist: %s", aiSrcPath)
+	}
+
+	// First create the tmp dir for the player
+	tmpDir := os.Getenv("GOPATH") + config.TmpDir + "/" + uuid.NewRandom().String()
+	err := os.Mkdir(tmpDir, 0700)
+	if err != nil {
+		return fmt.Errorf("Could not create tmp dir: %s for player: %s err: %s", tmpDir, p.fileName, err)
+	}
+	p.runDir = tmpDir
+
+	// Next copy over the main driver file
+	srcPath := p.gameName + "/ai/main.go"
+	destPath := tmpDir + "/main.go"
+	err = util.CopyFile(srcPath, destPath)
+	if err != nil {
+		return fmt.Errorf("Could not copy %s to %s", srcPath, destPath)
+	}
+
+	// Now copy over the AI-specific file
+	aiDestPath := tmpDir + "/ai.go"
+	err = util.CopyFile(aiSrcPath, aiDestPath)
+	if err != nil {
+		return fmt.Errorf("Could not copy %s to %s", aiSrcPath, aiDestPath)
+	}
+
+	return nil
+}
+
+func (p *Player) launchProcess(config *Configuration) error {
+	cmd := exec.Command("go", "run", p.runDir+"/main.go", p.runDir+"/ai.go")
+	if config.UseSandbox {
+		cmd.Env = os.Environ()
+		cmd.Env = append(cmd.Env, "GOOS=nacl")
+		cmd.Env = append(cmd.Env, "GOARCH=amd64p32")
+	}
+	p.cmd = cmd
+
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return err
+	}
+	p.cmdStdin = &stdin
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+	p.cmdStdout = bufio.NewReader(stdout)
+
+	var errBuf bytes.Buffer
+	cmd.Stderr = &errBuf
+	p.cmdStderr = &errBuf
+
+	p.responseChan = make(chan []byte, 1)
+
+	return cmd.Start()
+}
+
 func (p *Player) writeLine(line string) error {
 	_, err := io.WriteString(*p.cmdStdin, fmt.Sprintf("%s\n", line))
 	return err
@@ -209,13 +218,4 @@ func (p *Player) readResponseAsync() {
 	}
 
 	p.responseChan <- response
-}
-
-func (p *Player) Stderr() string {
-	buf := *p.cmdStderr
-	return buf.String()
-}
-
-func (p *Player) String() string {
-	return p.fileName
 }
