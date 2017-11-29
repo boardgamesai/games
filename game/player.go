@@ -86,9 +86,9 @@ func (p *Player) CleanUp() error {
 }
 
 // Our messages have two lines. First line is the type, second line is the JSON-encoded payload.
-func (p *Player) SendMessage(data interface{}) ([]byte, error) {
+func (p *Player) SendMessage(message interface{}) ([]byte, error) {
 	// Let's use reflection to get the type of this message
-	messageType := reflect.TypeOf(data).Name()
+	messageType := reflect.TypeOf(message).Name()
 	if messageType[0:7] != "Message" {
 		return []byte{}, fmt.Errorf("Invalid type %s passed to SendMessage", messageType)
 	}
@@ -96,7 +96,7 @@ func (p *Player) SendMessage(data interface{}) ([]byte, error) {
 	// Hack off the "Message" on the front and lowercase it
 	messageType = strings.ToLower(messageType[7:])
 
-	dataJSON, err := json.Marshal(&data)
+	messageJSON, err := json.Marshal(&message)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -106,7 +106,7 @@ func (p *Player) SendMessage(data interface{}) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	err = p.writeLine(string(dataJSON))
+	err = p.writeLine(string(messageJSON))
 	if err != nil {
 		return []byte{}, err
 	}
@@ -124,6 +124,18 @@ func (p *Player) SendMessage(data interface{}) ([]byte, error) {
 	}
 
 	return response, err
+}
+
+func (p *Player) SendMessageNoResponse(message interface{}) error {
+	response, err := p.SendMessage(message)
+	if err != nil {
+		return err
+	}
+	if string(response) != "OK" {
+		return fmt.Errorf("Got non-OK response for player: %s response: %s stderr:", p.Name, response, p.Stderr())
+	}
+
+	return nil
 }
 
 func (p *Player) Stderr() string {

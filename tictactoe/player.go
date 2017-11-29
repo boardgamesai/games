@@ -18,15 +18,7 @@ func (p *Player) Setup(other *Player) error {
 		Order:    p.Order,
 		Opponent: other,
 	}
-	response, err := p.SendMessage(message)
-	if err != nil {
-		return err
-	}
-	if string(response) != "OK" {
-		return fmt.Errorf("Got non-OK response when setting up player: %s err: %s", p.Name, err)
-	}
-
-	return nil
+	return p.SendMessageNoResponse(message)
 }
 
 func (p *Player) GetMove(newEvents []game.Event) (Move, error) {

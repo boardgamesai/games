@@ -18,15 +18,7 @@ func (p *Player) Setup(players []*Player) error {
 		Order:   p.Order,
 		Players: players,
 	}
-	response, err := p.SendMessage(message)
-	if err != nil {
-		return err
-	}
-	if string(response) != "OK" {
-		return fmt.Errorf("Got non-OK response when setting up player: %s err: %s", p.Name, err)
-	}
-
-	return nil
+	return p.SendMessageNoResponse(message)
 }
 
 func (p *Player) SetHand(newEvents []game.Event) error {
@@ -34,15 +26,7 @@ func (p *Player) SetHand(newEvents []game.Event) error {
 		Hand:      p.Hand,
 		NewEvents: newEvents,
 	}
-	response, err := p.SendMessage(message)
-	if err != nil {
-		return err
-	}
-	if string(response) != "OK" {
-		return fmt.Errorf("Got non-OK response when setting hand, player: %s err: %s", p.Name, err)
-	}
-
-	return nil
+	return p.SendMessageNoResponse(message)
 }
 
 func (p *Player) GetPassMove(direction PassDirection, newEvents []game.Event) (PassMove, error) {
