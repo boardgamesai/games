@@ -27,7 +27,7 @@ func main() {
 	}
 
 	if len(args) != (g.NumPlayers() + 1) { // +1 to accomodate the game name
-		log.Fatalf("Usage: %s", game.Usage(gameName, g.NumPlayers()))
+		log.Fatalf("Usage: %s", usage(gameName, g.NumPlayers()))
 	}
 
 	for _, playerName := range args[1:] {
@@ -96,6 +96,15 @@ func main() {
 		fmt.Println()
 		printSummaryTotals(players, outcomes)
 	}
+}
+
+func usage(gameName string, numPlayers int) string {
+	players := make([]string, numPlayers)
+	for i := 1; i <= numPlayers; i++ {
+		players[i-1] = fmt.Sprintf("<player%d>", i)
+	}
+
+	return fmt.Sprintf("go run play.go [-n numGames] %s %s", gameName, strings.Join(players, " "))
 }
 
 func printSummaryTotals(players []*game.Player, outcomes map[string]map[int]int) {
