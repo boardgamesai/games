@@ -3,8 +3,57 @@ package hearts
 import (
 	"testing"
 
+	"github.com/boardgamesai/games/game"
 	"github.com/boardgamesai/games/hearts/card"
 )
+
+func getGame(hands map[int][]string) *Game {
+	g := New()
+
+	players := []*Player{}
+	for i := 1; i <= g.NumPlayers(); i++ {
+		hand := Hand{}
+		for _, c := range hands[i] {
+			hand.Add(card.FromString(c))
+		}
+
+		player := Player{
+			Player: game.Player{
+				Order: i,
+			},
+			Runnable: &game.RunnablePlayerMock{},
+			Hand:     hand,
+		}
+		players = append(players, &player)
+	}
+	g.players = players
+	g.Comms = NewCommsMock(hands)
+
+	return g
+}
+
+func TestPlayRound(t *testing.T) {
+	hands := map[int][]string{
+		1: []string{"QC", "QS", "KS", "4D", "2D", "KD", "7H", "6H", "7S", "6S", "5H", "5S", "4S"},
+		2: []string{"KC", "4C", "TC", "TD", "7D", "AD", "7C", "9H", "8C", "AC", "4H", "KH", "3C"},
+		3: []string{"2C", "5C", "6C", "2S", "JC", "TS", "9C", "QH", "AS", "9S", "TH", "2H", "JH"},
+		4: []string{"JS", "8S", "9D", "8D", "6D", "5D", "3D", "8H", "3S", "QD", "3H", "AH", "JD"},
+	}
+	g := getGame(hands)
+
+	err := g.playRound()
+	if err != nil {
+		t.Errorf("Unexpected error: %s", err)
+	}
+
+	expectedScores := []int{0, 0, 22, -6}
+	for i, score := range expectedScores {
+		actualScore := g.scores.Totals[g.players[i]]
+		if actualScore != score {
+			t.Errorf("Got score %d, expected %d", actualScore, score)
+		}
+	}
+}
 
 func getTrick(cards []string) []card.Card {
 	trick := []card.Card{}
