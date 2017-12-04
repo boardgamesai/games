@@ -7,10 +7,12 @@ import (
 	"github.com/boardgamesai/games/game"
 	"github.com/boardgamesai/games/hearts/card"
 	"github.com/boardgamesai/games/util"
+	"github.com/pborman/uuid"
 )
 
 type Game struct {
 	game.Game
+	Comms   AIComms
 	players []*Player
 	deck    *Deck
 	scores  *Scores
@@ -29,11 +31,6 @@ func (g *Game) NumPlayers() int {
 }
 
 func (g *Game) Play() error {
-	config, err := game.Config()
-	if err != nil {
-		return err
-	}
-
 	// Wipe out any previous state
 	g.reset()
 	g.shufflePlayers()
@@ -41,13 +38,14 @@ func (g *Game) Play() error {
 	// Launch the player processes
 	for _, player := range g.players {
 		defer player.CleanUp()
+		defer g.SetOutput(player.Order, player)
 
-		err = player.Run(config)
+		err := player.Run()
 		if err != nil {
 			return fmt.Errorf("player %s failed to run, err: %s", player, err)
 		}
 
-		err = player.Setup(g.players)
+		err = g.Comms.Setup(player, g.players)
 		if err != nil {
 			return fmt.Errorf("player %s failed to setup, err: %s", player, err)
 		}
@@ -55,7 +53,7 @@ func (g *Game) Play() error {
 
 	passDirection := PassLeft
 	for !g.gameOver() {
-		err = g.dealCards()
+		err := g.dealCards()
 		if err != nil {
 			// TODO how to correctly handle when we bomb out here? Who wins?
 			return err
@@ -84,10 +82,17 @@ func (g *Game) Play() error {
 	return nil
 }
 
-func (g *Game) AddPlayer(name string) {
-	basePlayer := game.NewPlayer("hearts", name)
+func (g *Game) AddPlayer(name string, r game.Runnable) {
+	if r == nil {
+		r = game.NewRunnablePlayer("hearts", name)
+	}
+
 	player := Player{
-		Player: *basePlayer,
+		Player: game.Player{
+			ID:   uuid.NewRandom().String(), // HACK - TODO use actual IDs
+			Name: name,
+		},
+		Runnable: r,
 	}
 	g.players = append(g.players, &player)
 }
@@ -140,6 +145,9 @@ func (g *Game) reset() {
 	g.Game.Reset()
 	g.deck = NewDeck()
 	g.scores = NewScores()
+	if g.Comms == nil {
+		g.Comms = NewComms(g)
+	}
 }
 
 func (g *Game) dealCards() error {
@@ -151,7 +159,7 @@ func (g *Game) dealCards() error {
 		}
 		player.Hand.Sort()
 
-		err := player.SetHand(g.EventLog.NewForPlayer(player.Order))
+		err := g.Comms.SetHand(player)
 		if err != nil {
 			return err
 		}
@@ -170,7 +178,7 @@ func (g *Game) passCards(passDirection PassDirection) error {
 	// First collect all the passes...
 	passes := map[*Player]PassMove{}
 	for _, player := range g.players {
-		passMove, err := player.GetPassMove(passDirection, g.EventLog.NewForPlayer(player.Order))
+		passMove, err := g.Comms.GetPassMove(player, passDirection)
 		if err != nil {
 			// TODO: who wins if this happens?
 			return fmt.Errorf("player %s failed to pass cards, err: %s stderr: %s", player, err, player.Stderr())
@@ -205,7 +213,7 @@ func (g *Game) passCards(passDirection PassDirection) error {
 
 	// Now that everyone's hands are settled, one more time through to inform each player.
 	for _, player := range g.players {
-		err := player.SetHand(g.EventLog.NewForPlayer(player.Order))
+		err := g.Comms.SetHand(player)
 		if err != nil {
 			return err
 		}
@@ -312,7 +320,7 @@ func (g *Game) playTrick(turn int, trickCount int, heartsBroken bool) (int, int,
 	// Collect a play from each player
 	for i := 0; i < 4; i++ {
 		player := g.players[turn]
-		move, err := player.GetPlayMove(trick, g.EventLog.NewForPlayer(player.Order))
+		move, err := g.Comms.GetPlayMove(player, trick)
 		if err != nil {
 			return -1, -1, err
 		}

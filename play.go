@@ -31,7 +31,7 @@ func main() {
 	}
 
 	for _, playerName := range args[1:] {
-		g.AddPlayer(playerName)
+		g.AddPlayer(playerName, nil)
 	}
 
 	if numGames == 1 {
@@ -62,7 +62,7 @@ func main() {
 		}
 
 		for _, player := range g.Players() {
-			loggedOutput := player.Stderr()
+			loggedOutput := g.LoggedOutput(player.Order)
 			if loggedOutput != "" {
 				fmt.Printf("Player %d logged output:\n", player.Order)
 				fmt.Printf("%s\n", loggedOutput)

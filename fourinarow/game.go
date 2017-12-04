@@ -6,10 +6,12 @@ import (
 
 	"github.com/boardgamesai/games/game"
 	"github.com/boardgamesai/games/util"
+	"github.com/pborman/uuid"
 )
 
 type Game struct {
 	game.Game
+	Comms   AIComms
 	players []*Player
 	board   *Board
 }
@@ -27,11 +29,6 @@ func (g *Game) NumPlayers() int {
 }
 
 func (g *Game) Play() error {
-	config, err := game.Config()
-	if err != nil {
-		return err
-	}
-
 	// Wipe out any previous state
 	g.reset()
 	g.shufflePlayers()
@@ -39,15 +36,16 @@ func (g *Game) Play() error {
 	// Launch the player processes
 	for _, player := range g.players {
 		defer player.CleanUp()
+		defer g.SetOutput(player.Order, player)
 
 		// This copies files to a tmp dir, runs it, and sends a heartbeat message to verify.
-		err = player.Run(config)
+		err := player.Run()
 		if err != nil {
 			return fmt.Errorf("player %s failed to run, err: %s", player, err)
 		}
 
 		// This initializes the game state for this player.
-		err = player.Setup(g.otherPlayer(player))
+		err = g.Comms.Setup(player, g.otherPlayer(player))
 		if err != nil {
 			return fmt.Errorf("player %s failed to setup, err: %s", player, err)
 		}
@@ -57,7 +55,7 @@ func (g *Game) Play() error {
 	playerTurn := 0
 	for !g.board.IsFull() {
 		player := g.players[playerTurn]
-		move, err := player.GetMove(g.EventLog.NewForPlayer(player.Order))
+		move, err := g.Comms.GetMove(player)
 		if err != nil {
 			g.setWinner(g.otherPlayer(player))
 			return fmt.Errorf("player %s failed to get move, err: %s stderr: %s", player, err, player.Stderr())
@@ -91,10 +89,17 @@ func (g *Game) Play() error {
 	return nil
 }
 
-func (g *Game) AddPlayer(name string) {
-	basePlayer := game.NewPlayer("fourinarow", name)
+func (g *Game) AddPlayer(name string, r game.Runnable) {
+	if r == nil {
+		r = game.NewRunnablePlayer("fourinarow", name)
+	}
+
 	player := Player{
-		Player: *basePlayer,
+		Player: game.Player{
+			ID:   uuid.NewRandom().String(), // HACK - TODO use actual IDs
+			Name: name,
+		},
+		Runnable: r,
 	}
 	g.players = append(g.players, &player)
 }
@@ -130,6 +135,9 @@ func (g *Game) Events() []fmt.Stringer {
 func (g *Game) reset() {
 	g.Game.Reset()
 	g.board = &Board{}
+	if g.Comms == nil {
+		g.Comms = NewComms(g)
+	}
 }
 
 func (g *Game) setWinner(p *Player) {

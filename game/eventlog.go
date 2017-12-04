@@ -65,3 +65,7 @@ func (el *EventLog) NewForPlayer(order int) []Event {
 
 	return events
 }
+
+func (el *EventLog) Clear() {
+	*el = []Event{}
+}
