@@ -13,7 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/boardgamesai/games/util"
 	"github.com/pborman/uuid"
 )
 
@@ -165,14 +164,14 @@ func (p *RunnablePlayer) setupFiles(config *Configuration) error {
 	// Next copy over the main driver file
 	srcPath := p.gameName + "/ai/main.go"
 	destPath := tmpDir + "/main.go"
-	err = util.CopyFile(srcPath, destPath)
+	err = p.copyFile(srcPath, destPath)
 	if err != nil {
 		return fmt.Errorf("Could not copy %s to %s", srcPath, destPath)
 	}
 
 	// Now copy over the AI-specific file
 	aiDestPath := tmpDir + "/ai.go"
-	err = util.CopyFile(aiSrcPath, aiDestPath)
+	err = p.copyFile(aiSrcPath, aiDestPath)
 	if err != nil {
 		return fmt.Errorf("Could not copy %s to %s", aiSrcPath, aiDestPath)
 	}
@@ -230,4 +229,25 @@ func (p *RunnablePlayer) readResponseAsync() {
 	}
 
 	p.responseChan <- response
+}
+
+func (p *RunnablePlayer) copyFile(srcPath string, destPath string) error {
+	srcFile, err := os.Open(srcPath)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	destFile, err := os.Create(destPath)
+	if err != nil {
+		return err
+	}
+	defer destFile.Close()
+
+	_, err = io.Copy(destFile, srcFile)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

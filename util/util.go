@@ -3,9 +3,7 @@ package util
 import (
 	"crypto/rand"
 	"fmt"
-	"io"
 	"math/big"
-	"os"
 	"reflect"
 )
 
@@ -40,26 +38,4 @@ func Shuffle(slice interface{}) {
 	for i := 0; i < maxlen; i++ {
 		swap(i, RandInt(i, maxlen))
 	}
-}
-
-// CopyFile copies a file from source to dest
-func CopyFile(srcPath string, destPath string) error {
-	srcFile, err := os.Open(srcPath)
-	if err != nil {
-		return err
-	}
-	defer srcFile.Close()
-
-	destFile, err := os.Create(destPath)
-	if err != nil {
-		return err
-	}
-	defer destFile.Close()
-
-	_, err = io.Copy(destFile, srcFile)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
