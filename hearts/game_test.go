@@ -12,17 +12,12 @@ func getGame(hands map[int][]string) *Game {
 
 	players := []*Player{}
 	for i := 1; i <= g.NumPlayers(); i++ {
-		hand := Hand{}
-		for _, c := range hands[i] {
-			hand.Add(card.FromString(c))
-		}
-
 		player := Player{
 			Player: game.Player{
 				Order: i,
 			},
 			Runnable: &game.RunnablePlayerMock{},
-			Hand:     hand,
+			Hand:     getHand(hands[i]),
 		}
 		players = append(players, &player)
 	}
@@ -30,6 +25,87 @@ func getGame(hands map[int][]string) *Game {
 	g.Comms = NewCommsMock(hands)
 
 	return g
+}
+
+func getHand(cards []string) Hand {
+	hand := Hand{}
+	for _, c := range cards {
+		hand.Add(card.FromString(c))
+	}
+	return hand
+}
+
+func TestPassCards(t *testing.T) {
+	tests := []struct {
+		hands         map[int][]string
+		passDirection PassDirection
+		expectedHands map[int][]string
+	}{
+		{
+			map[int][]string{
+				1: []string{"2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC", "AC"},
+				2: []string{"2D", "3D", "4D", "5D", "6D", "7D", "8D", "9D", "TD", "JD", "QD", "KD", "AD"},
+				3: []string{"2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "TS", "JS", "QS", "KS", "AS"},
+				4: []string{"2H", "3H", "4H", "5H", "6H", "7H", "8H", "9H", "TH", "JH", "QH", "KH", "AH"},
+			},
+			PassLeft,
+			map[int][]string{
+				1: []string{"5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC", "AC", "2H", "3H", "4H"},
+				2: []string{"2C", "3C", "4C", "5D", "6D", "7D", "8D", "9D", "TD", "JD", "QD", "KD", "AD"},
+				3: []string{"2D", "3D", "4D", "5S", "6S", "7S", "8S", "9S", "TS", "JS", "QS", "KS", "AS"},
+				4: []string{"5H", "6H", "7H", "8H", "9H", "TH", "JH", "QH", "KH", "AH", "2S", "3S", "4S"},
+			},
+		},
+		{
+			map[int][]string{
+				1: []string{"2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC", "AC"},
+				2: []string{"2D", "3D", "4D", "5D", "6D", "7D", "8D", "9D", "TD", "JD", "QD", "KD", "AD"},
+				3: []string{"2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "TS", "JS", "QS", "KS", "AS"},
+				4: []string{"2H", "3H", "4H", "5H", "6H", "7H", "8H", "9H", "TH", "JH", "QH", "KH", "AH"},
+			},
+			PassRight,
+			map[int][]string{
+				1: []string{"5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC", "AC", "2D", "3D", "4D"},
+				2: []string{"5D", "6D", "7D", "8D", "9D", "TD", "JD", "QD", "KD", "AD", "2S", "3S", "4S"},
+				3: []string{"2H", "3H", "4H", "5S", "6S", "7S", "8S", "9S", "TS", "JS", "QS", "KS", "AS"},
+				4: []string{"2C", "3C", "4C", "5H", "6H", "7H", "8H", "9H", "TH", "JH", "QH", "KH", "AH"},
+			},
+		},
+		{
+			map[int][]string{
+				1: []string{"2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC", "AC"},
+				2: []string{"2D", "3D", "4D", "5D", "6D", "7D", "8D", "9D", "TD", "JD", "QD", "KD", "AD"},
+				3: []string{"2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "TS", "JS", "QS", "KS", "AS"},
+				4: []string{"2H", "3H", "4H", "5H", "6H", "7H", "8H", "9H", "TH", "JH", "QH", "KH", "AH"},
+			},
+			PassAcross,
+			map[int][]string{
+				1: []string{"5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC", "AC", "2S", "3S", "4S"},
+				2: []string{"5D", "6D", "7D", "8D", "9D", "TD", "JD", "QD", "KD", "AD", "2H", "3H", "4H"},
+				3: []string{"2C", "3C", "4C", "5S", "6S", "7S", "8S", "9S", "TS", "JS", "QS", "KS", "AS"},
+				4: []string{"2D", "3D", "4D", "5H", "6H", "7H", "8H", "9H", "TH", "JH", "QH", "KH", "AH"},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		g := getGame(test.hands)
+
+		err := g.passCards(test.passDirection)
+		if err != nil {
+			t.Errorf("Unexpected error: %s", err)
+		}
+
+		for _, player := range g.players {
+			h := getHand(test.expectedHands[player.Order])
+			for i := 1; i < len(player.Hand); i++ {
+				if player.Hand[i] != h[i] {
+					t.Errorf("expected hand: %s got: %s for player %s", h, player.Hand, player)
+					break
+				}
+			}
+		}
+	}
 }
 
 func TestPlayRound(t *testing.T) {

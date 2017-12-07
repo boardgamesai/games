@@ -7,8 +7,8 @@ type Suit string
 const (
 	Clubs    = Suit("C")
 	Diamonds = Suit("D")
-	Spades   = Suit("S")
 	Hearts   = Suit("H")
+	Spades   = Suit("S")
 )
 
 type Rank string

@@ -23,7 +23,16 @@ func (c *CommsMock) SetHand(p *Player) error {
 }
 
 func (c *CommsMock) GetPassMove(p *Player, direction PassDirection) (PassMove, error) {
-	return PassMove{}, nil
+	hand := c.hands[p.Order]
+	move := PassMove{
+		Cards: []card.Card{
+			card.FromString(hand[0]),
+			card.FromString(hand[1]),
+			card.FromString(hand[2]),
+		},
+	}
+
+	return move, nil
 }
 
 func (c *CommsMock) GetPlayMove(p *Player, trick []card.Card) (PlayMove, error) {
