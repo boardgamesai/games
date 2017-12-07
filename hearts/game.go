@@ -275,6 +275,7 @@ func (g *Game) playRound() error {
 	scores := map[*Player]int{}
 	score := 0
 	heartsBroken := false
+	tookPoints := map[*Player]bool{}
 	var err error
 
 	for i := 0; i < 13; i++ {
@@ -291,6 +292,27 @@ func (g *Game) playRound() error {
 		}
 
 		scores[g.players[turn]] += score
+
+		if score != 0 && score != -10 {
+			tookPoints[g.players[turn]] = true
+		}
+	}
+
+	// Before this round's in the books, check for a moonshot, which would change everything.
+	if len(tookPoints) == 1 {
+		// Only one player taking points: that's a moonshot
+		moonshotter := &Player{}
+		for player, _ := range tookPoints {
+			moonshotter = player
+		}
+
+		for _, player := range g.players {
+			if player == moonshotter {
+				scores[player] -= 26
+			} else {
+				scores[player] += 26
+			}
+		}
 	}
 
 	g.scores.AddRound(scores)

@@ -33,24 +33,52 @@ func getGame(hands map[int][]string) *Game {
 }
 
 func TestPlayRound(t *testing.T) {
-	hands := map[int][]string{
-		1: []string{"QC", "QS", "KS", "4D", "2D", "KD", "7H", "6H", "7S", "6S", "5H", "5S", "4S"},
-		2: []string{"KC", "4C", "TC", "TD", "7D", "AD", "7C", "9H", "8C", "AC", "4H", "KH", "3C"},
-		3: []string{"2C", "5C", "6C", "2S", "JC", "TS", "9C", "QH", "AS", "9S", "TH", "2H", "JH"},
-		4: []string{"JS", "8S", "9D", "8D", "6D", "5D", "3D", "8H", "3S", "QD", "3H", "AH", "JD"},
+	tests := []struct {
+		hands          map[int][]string
+		expectedScores []int
+	}{
+		{
+			map[int][]string{
+				1: []string{"QC", "QS", "KS", "4D", "2D", "KD", "7H", "6H", "7S", "6S", "5H", "5S", "4S"},
+				2: []string{"KC", "4C", "TC", "TD", "7D", "AD", "7C", "9H", "8C", "AC", "4H", "KH", "3C"},
+				3: []string{"2C", "5C", "6C", "2S", "JC", "TS", "9C", "QH", "AS", "9S", "TH", "2H", "JH"},
+				4: []string{"JS", "8S", "9D", "8D", "6D", "5D", "3D", "8H", "3S", "QD", "3H", "AH", "JD"},
+			},
+			[]int{0, 0, 22, -6},
+		},
+		{
+			map[int][]string{
+				1: []string{"4C", "7C", "TC", "4D", "7D", "TD", "4S", "7S", "TS", "4H", "7H", "TH", "JS"},
+				2: []string{"AC", "KC", "QC", "AD", "KD", "QD", "AS", "KS", "QS", "AH", "KH", "QH", "JH"},
+				3: []string{"2C", "5C", "8C", "2D", "5D", "8D", "2S", "5S", "8S", "2H", "5H", "8H", "JC"},
+				4: []string{"3C", "6C", "9C", "3D", "6D", "9D", "3S", "6S", "9S", "3H", "6H", "9H", "JD"},
+			},
+			[]int{26, -10, 26, 26},
+		},
+		{
+			map[int][]string{
+				1: []string{"4C", "7C", "TC", "4D", "7D", "TD", "4S", "7S", "TS", "4H", "7H", "TH", "JS"},
+				2: []string{"AC", "KC", "QC", "JD", "KD", "QD", "AS", "KS", "QS", "AH", "KH", "QH", "JH"},
+				3: []string{"2C", "5C", "8C", "AD", "5D", "8D", "2S", "5S", "8S", "2H", "5H", "8H", "JC"},
+				4: []string{"3C", "6C", "9C", "3D", "6D", "9D", "3S", "6S", "9S", "3H", "6H", "9H", "2D"},
+			},
+			[]int{26, 0, 16, 26},
+		},
 	}
-	g := getGame(hands)
 
-	err := g.playRound()
-	if err != nil {
-		t.Errorf("Unexpected error: %s", err)
-	}
+	for _, test := range tests {
+		g := getGame(test.hands)
 
-	expectedScores := []int{0, 0, 22, -6}
-	for i, score := range expectedScores {
-		actualScore := g.scores.Totals[g.players[i]]
-		if actualScore != score {
-			t.Errorf("Got score %d, expected %d", actualScore, score)
+		err := g.playRound()
+		if err != nil {
+			t.Errorf("Unexpected error: %s", err)
+		}
+
+		for i, score := range test.expectedScores {
+			actualScore := g.scores.Totals[g.players[i]]
+			if actualScore != score {
+				t.Errorf("Got score %d, expected %d", actualScore, score)
+			}
 		}
 	}
 }
