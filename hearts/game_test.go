@@ -9,8 +9,10 @@ import (
 
 func getGame(hands map[int][]string) *Game {
 	g := New()
+	g.Comms = &CommsMock{
+		hands: hands,
+	}
 
-	players := []*Player{}
 	for i := 1; i <= g.NumPlayers(); i++ {
 		player := Player{
 			Player: game.Player{
@@ -19,10 +21,8 @@ func getGame(hands map[int][]string) *Game {
 			Runnable: &game.RunnablePlayerMock{},
 			Hand:     getHand(hands[i]),
 		}
-		players = append(players, &player)
+		g.players = append(g.players, &player)
 	}
-	g.players = players
-	g.Comms = NewCommsMock(hands)
 
 	return g
 }

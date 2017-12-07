@@ -8,12 +8,6 @@ type CommsMock struct {
 	count int
 }
 
-func NewCommsMock(hands map[int][]string) *CommsMock {
-	return &CommsMock{
-		hands: hands,
-	}
-}
-
 func (c *CommsMock) Setup(p *Player, players []*Player) error {
 	return nil
 }
