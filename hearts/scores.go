@@ -37,7 +37,6 @@ func (s *Scores) Places() []game.Place {
 	ties := map[int]int{}
 	players := s.Players()
 
-	// for player, score := range s.Totals {
 	for _, player := range players {
 		score := s.Totals[player]
 		pairs = append(pairs, Pair{score: score, player: player})
@@ -70,6 +69,7 @@ func (s *Scores) Places() []game.Place {
 			Player: pair.player.Player,
 			Rank:   rank,
 			Tie:    tie,
+			Score:  pair.score,
 		}
 		places = append(places, place)
 

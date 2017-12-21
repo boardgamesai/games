@@ -53,12 +53,18 @@ func main() {
 
 		fmt.Println("\nFinish places:")
 
+		hasScores := false
 		for _, place := range g.Places() {
 			tie := ""
 			if place.Tie {
 				tie = " (tie)"
 			}
-			fmt.Printf("%d.%s %s (%d)\n", place.Rank, tie, place.Player.Name, place.Player.Order)
+			fmt.Printf("%d.%s %s (%d)", place.Rank, tie, place.Player.Name, place.Player.Order)
+			if hasScores || place.Score > 0 {
+				hasScores = true
+				fmt.Printf(" - %d", place.Score)
+			}
+			fmt.Println("")
 		}
 
 		for _, player := range g.Players() {
