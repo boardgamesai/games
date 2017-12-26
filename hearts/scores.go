@@ -66,10 +66,11 @@ func (s *Scores) Places() []game.Place {
 		}
 
 		place := game.Place{
-			Player: pair.player.Player,
-			Rank:   rank,
-			Tie:    tie,
-			Score:  pair.score,
+			Player:   pair.player.Player,
+			Rank:     rank,
+			Tie:      tie,
+			Score:    pair.score,
+			HasScore: true,
 		}
 		places = append(places, place)
 

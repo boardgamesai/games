@@ -3,10 +3,11 @@ package game
 import "fmt"
 
 type Place struct {
-	Player Player
-	Rank   int
-	Tie    bool
-	Score  int
+	Player   Player
+	Rank     int
+	Tie      bool
+	Score    int
+	HasScore bool // Necessary because zero is a valid score, and using pointers just for nil feels wrong
 }
 
 func (p Place) String() string {
