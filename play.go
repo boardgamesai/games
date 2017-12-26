@@ -38,6 +38,7 @@ func main() {
 		err := g.Play()
 		if err != nil {
 			fmt.Printf("game ended with error: %s\n", err)
+			printLoggedOutput(g)
 			return
 		}
 
@@ -67,13 +68,7 @@ func main() {
 			fmt.Println("")
 		}
 
-		for _, player := range g.Players() {
-			loggedOutput := g.LoggedOutput(player.Order)
-			if loggedOutput != "" {
-				fmt.Printf("Player %d logged output:\n", player.Order)
-				fmt.Printf("%s\n", loggedOutput)
-			}
-		}
+		printLoggedOutput(g)
 	} else {
 		// Grab a copy of the game's players in the original order. The game will shuffle them,
 		// but we want to know the original order for reporting purposes.
@@ -111,6 +106,16 @@ func usage(gameName string, numPlayers int) string {
 	}
 
 	return fmt.Sprintf("go run play.go [-n numGames] %s %s", gameName, strings.Join(players, " "))
+}
+
+func printLoggedOutput(g game.Playable) {
+	for _, player := range g.Players() {
+		loggedOutput := g.LoggedOutput(player.Order)
+		if loggedOutput != "" {
+			fmt.Printf("Player %d logged output:\n", player.Order)
+			fmt.Printf("%s\n", loggedOutput)
+		}
+	}
 }
 
 func printSummaryTotals(players []*game.Player, outcomes map[string]map[int]int) {
