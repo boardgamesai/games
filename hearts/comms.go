@@ -27,14 +27,6 @@ func (c *Comms) Setup(p *Player, players []*Player) error {
 	return p.SendMessageNoResponse(message)
 }
 
-func (c *Comms) SetHand(p *Player) error {
-	message := MessageHand{
-		Hand:      p.Hand,
-		NewEvents: c.NewEvents(p.Order),
-	}
-	return p.SendMessageNoResponse(message)
-}
-
 func (c *Comms) GetPassMove(p *Player, direction PassDirection) (PassMove, error) {
 	move := PassMove{}
 

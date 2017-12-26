@@ -37,8 +37,6 @@ func (d *Driver) Run() {
 		switch message.Type {
 		case "setup":
 			response, err = d.handleSetup(message.Data)
-		case "hand":
-			response, err = d.handleHand(message.Data)
 		case "pass":
 			response, err = d.handlePass(message.Data)
 		case "play":
@@ -67,22 +65,6 @@ func (d *Driver) handleSetup(message []byte) (string, error) {
 	return "OK", nil
 }
 
-func (d *Driver) handleHand(message []byte) (string, error) {
-	handMessage := hearts.MessageHand{}
-	err := json.Unmarshal(message, &handMessage)
-	if err != nil {
-		return "", fmt.Errorf("JSON decode failed: %s err: %s", message, err)
-	}
-
-	d.state.AddEvents(handMessage.NewEvents)
-	d.state.Hand = handMessage.Hand
-	d.state.Trick = []card.Card{}
-	d.state.TrickCount = 0
-	d.state.HeartsBroken = false
-
-	return "OK", nil
-}
-
 func (d *Driver) handlePass(message []byte) (string, error) {
 	passMessage := hearts.MessagePass{}
 	err := json.Unmarshal(message, &passMessage)
@@ -90,10 +72,21 @@ func (d *Driver) handlePass(message []byte) (string, error) {
 		return "", fmt.Errorf("JSON decode failed: %s err: %s", message, err)
 	}
 
+	err = d.checkForDealPass(passMessage.NewEvents)
+	if err != nil {
+		return "", err
+	}
+
 	d.state.AddEvents(passMessage.NewEvents)
 	d.state.PassDirection = passMessage.Direction
 
+	// Remove these cards from their hand right away
+	// No need to sort, because cards will be passed to us and then we'll sort
 	move := d.ai.GetPass(*d.state)
+	for _, c := range move.Cards {
+		d.state.Hand.Remove(c)
+	}
+
 	moveJSON, err := json.Marshal(&move)
 	if err != nil {
 		return "", fmt.Errorf("JSON encode failed: %+v err: %s", move, err)
@@ -106,6 +99,11 @@ func (d *Driver) handlePlay(message []byte) (string, error) {
 	err := json.Unmarshal(message, &playMessage)
 	if err != nil {
 		return "", fmt.Errorf("JSON decode failed: %s err: %s", message, err)
+	}
+
+	err = d.checkForDealPass(playMessage.NewEvents)
+	if err != nil {
+		return "", err
 	}
 
 	d.state.AddEvents(playMessage.NewEvents)
@@ -129,4 +127,41 @@ func (d *Driver) handlePlay(message []byte) (string, error) {
 		return "", fmt.Errorf("JSON encode failed: %+v err: %s", move, err)
 	}
 	return string(moveJSON), nil
+}
+
+func (d *Driver) checkForDealPass(events []game.Event) error {
+	for _, e := range events {
+
+		switch e.Type {
+		case hearts.EventTypeDeal:
+			dealEvent := hearts.EventDeal{}
+			err := json.Unmarshal(e.Data, &dealEvent)
+			if err != nil {
+				return err
+			}
+
+			// If we got a hand, we know its ours (we don't get hands for other players) and we reset
+			d.state.Hand = dealEvent.Hand
+			d.state.Trick = []card.Card{}
+			d.state.TrickCount = 0
+			d.state.HeartsBroken = false
+		case hearts.EventTypePass:
+			passEvent := hearts.EventPass{}
+			err := json.Unmarshal(e.Data, &passEvent)
+			if err != nil {
+				return err
+			}
+
+			if passEvent.ToOrder != d.state.Order {
+				continue
+			}
+
+			for _, c := range passEvent.Cards {
+				d.state.Hand.Add(c)
+			}
+			d.state.Hand.Sort()
+		}
+	}
+
+	return nil
 }

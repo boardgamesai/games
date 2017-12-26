@@ -12,10 +12,6 @@ func (c *CommsMock) Setup(p *Player, players []*Player) error {
 	return nil
 }
 
-func (c *CommsMock) SetHand(p *Player) error {
-	return nil
-}
-
 func (c *CommsMock) GetPassMove(p *Player, direction PassDirection) (PassMove, error) {
 	hand := c.hands[p.Order]
 	move := PassMove{

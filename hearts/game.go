@@ -159,11 +159,6 @@ func (g *Game) dealCards() error {
 		}
 		player.Hand.Sort()
 
-		err := g.Comms.SetHand(player)
-		if err != nil {
-			return err
-		}
-
 		e := EventDeal{
 			Order: player.Order,
 			Hand:  player.Hand,
@@ -209,14 +204,6 @@ func (g *Game) passCards(passDirection PassDirection) error {
 			Cards:     passMove.Cards,
 		}
 		g.EventLog.Add(e, []int{passer.Order, recipient.Order})
-	}
-
-	// Now that everyone's hands are settled, one more time through to inform each player.
-	for _, player := range g.players {
-		err := g.Comms.SetHand(player)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil

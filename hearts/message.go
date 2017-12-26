@@ -10,11 +10,6 @@ type MessageSetup struct {
 	Players []*Player
 }
 
-type MessageHand struct {
-	Hand
-	NewEvents []game.Event
-}
-
 type MessagePass struct {
 	Direction PassDirection
 	NewEvents []game.Event
