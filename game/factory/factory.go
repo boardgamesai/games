@@ -6,6 +6,7 @@ import (
 	"github.com/boardgamesai/games/fourinarow"
 	"github.com/boardgamesai/games/game"
 	"github.com/boardgamesai/games/hearts"
+	"github.com/boardgamesai/games/reversi"
 	"github.com/boardgamesai/games/tictactoe"
 )
 
@@ -18,6 +19,8 @@ func New(gameName string) (game.Playable, error) {
 		g = fourinarow.New()
 	case "hearts":
 		g = hearts.New()
+	case "reversi":
+		g = reversi.New()
 	case "tictactoe":
 		g = tictactoe.New()
 	default:
