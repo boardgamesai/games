@@ -76,7 +76,10 @@ func (p *RunnablePlayer) CleanUp() error {
 	err1 := os.RemoveAll(p.runDir)
 
 	// Kill the process (if it didn't die already due to error).
-	err2 := p.cmd.Process.Kill()
+	var err2 error
+	if p.cmd != nil {
+		err2 = p.cmd.Process.Kill()
+	}
 
 	if err1 != nil {
 		return err1
@@ -138,6 +141,10 @@ func (p *RunnablePlayer) SendMessageNoResponse(message interface{}) error {
 }
 
 func (p *RunnablePlayer) Stderr() string {
+	if p.cmdStderr == nil {
+		return ""
+	}
+
 	buf := *p.cmdStderr
 	return buf.String()
 }
