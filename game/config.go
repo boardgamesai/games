@@ -22,9 +22,5 @@ func Config() (*Configuration, error) {
 	decoder := json.NewDecoder(file)
 	config := Configuration{}
 	err = decoder.Decode(&config)
-	if err != nil {
-		return nil, err
-	}
-
-	return &config, nil
+	return &config, err
 }
