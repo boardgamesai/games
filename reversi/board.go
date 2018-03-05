@@ -33,7 +33,7 @@ func NewBoard() *Board {
 }
 
 func (b *Board) IsValidMove(d Disc, m Move) error {
-	if m.Row > 7 || m.Row < 0 || m.Col > 7 || m.Col < 0 {
+	if offBoard(m.Col, m.Row) {
 		return ErrOutOfBounds
 	}
 
