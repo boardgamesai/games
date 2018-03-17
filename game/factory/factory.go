@@ -3,6 +3,7 @@ package factory
 import (
 	"fmt"
 
+	"github.com/boardgamesai/games/amazons"
 	"github.com/boardgamesai/games/fourinarow"
 	"github.com/boardgamesai/games/game"
 	"github.com/boardgamesai/games/hearts"
@@ -15,6 +16,8 @@ func New(gameName string) (game.Playable, error) {
 	var err error
 
 	switch gameName {
+	case "amazons":
+		g = amazons.New()
 	case "fourinarow":
 		g = fourinarow.New()
 	case "hearts":
