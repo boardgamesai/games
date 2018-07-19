@@ -20,6 +20,10 @@ func main() {
 	}
 
 	args := flag.Args()
+	if len(args) == 0 {
+		log.Fatalf("Usage: %s", usageNoGame())
+	}
+
 	gameName := args[0]
 	g, err := factory.New(gameName)
 	if err != nil {
@@ -35,66 +39,74 @@ func main() {
 	}
 
 	if numGames == 1 {
+		playOneGame(g)
+	} else {
+		playMultipleGames(g, numGames)
+	}
+}
+
+func playOneGame(g game.Playable) {
+	err := g.Play()
+	if err != nil {
+		fmt.Printf("game ended with error: %s\n", err)
+		printLoggedOutput(g)
+		return
+	}
+
+	for _, player := range g.Players() {
+		fmt.Printf("Player %d: %s\n", player.Order, player.Name)
+	}
+
+	fmt.Println()
+
+	for i, event := range g.Events() {
+		fmt.Printf("%d. %s\n", i+1, event)
+	}
+
+	fmt.Println("\nFinish places:")
+
+	for _, place := range g.Places() {
+		tie := ""
+		if place.Tie {
+			tie = " (tie)"
+		}
+		fmt.Printf("%d.%s %s (%d)", place.Rank, tie, place.Player.Name, place.Player.Order)
+		if place.HasScore {
+			fmt.Printf(": %d", place.Score)
+		}
+		fmt.Println("")
+	}
+
+	printLoggedOutput(g)
+}
+
+func playMultipleGames(g game.Playable, numGames int) {
+	// Grab a copy of the game's players in the original order. The game will shuffle them,
+	// but we want to know the original order for reporting purposes.
+	players := make([]*game.Player, len(g.Players()))
+	copy(players, g.Players())
+
+	outcomes := map[string]map[int]int{}
+	for _, player := range players {
+		outcomes[player.ID] = map[int]int{}
+	}
+
+	for i := 1; i <= numGames; i++ {
+		fmt.Printf("playing game %d...\n", i)
+
 		err := g.Play()
 		if err != nil {
-			fmt.Printf("game ended with error: %s\n", err)
-			printLoggedOutput(g)
-			return
+			fmt.Printf("game %d ended with error: %s\n", i, err)
+			continue
 		}
-
-		for _, player := range g.Players() {
-			fmt.Printf("Player %d: %s\n", player.Order, player.Name)
-		}
-
-		fmt.Println()
-
-		for i, event := range g.Events() {
-			fmt.Printf("%d. %s\n", i+1, event)
-		}
-
-		fmt.Println("\nFinish places:")
 
 		for _, place := range g.Places() {
-			tie := ""
-			if place.Tie {
-				tie = " (tie)"
-			}
-			fmt.Printf("%d.%s %s (%d)", place.Rank, tie, place.Player.Name, place.Player.Order)
-			if place.HasScore {
-				fmt.Printf(": %d", place.Score)
-			}
-			fmt.Println("")
+			outcomes[place.Player.ID][place.Rank]++
 		}
-
-		printLoggedOutput(g)
-	} else {
-		// Grab a copy of the game's players in the original order. The game will shuffle them,
-		// but we want to know the original order for reporting purposes.
-		players := make([]*game.Player, len(g.Players()))
-		copy(players, g.Players())
-
-		outcomes := map[string]map[int]int{}
-		for _, player := range players {
-			outcomes[player.ID] = map[int]int{}
-		}
-
-		for i := 1; i <= numGames; i++ {
-			fmt.Printf("playing game %d...\n", i)
-
-			err := g.Play()
-			if err != nil {
-				fmt.Printf("game %d ended with error: %s\n", i, err)
-				continue
-			}
-
-			for _, place := range g.Places() {
-				outcomes[place.Player.ID][place.Rank]++
-			}
-		}
-
-		fmt.Println()
-		printSummaryTotals(players, outcomes)
 	}
+
+	fmt.Println()
+	printSummaryTotals(players, outcomes)
 }
 
 func usage(gameName string, numPlayers int) string {
@@ -104,6 +116,10 @@ func usage(gameName string, numPlayers int) string {
 	}
 
 	return fmt.Sprintf("go run play.go [-n numGames] %s %s", gameName, strings.Join(players, " "))
+}
+
+func usageNoGame() string {
+	return "go run play.go [-n numGames] <game> <player1> <player2> ..."
 }
 
 func printLoggedOutput(g game.Playable) {
