@@ -141,7 +141,7 @@ func (g *Game) reset() {
 }
 
 func (g *Game) setWinner(p *Player) {
-	places := []game.Place{}
+	var places []game.Place
 
 	if p == nil {
 		places = []game.Place{
