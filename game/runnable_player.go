@@ -134,7 +134,7 @@ func (p *RunnablePlayer) SendMessageNoResponse(message interface{}) error {
 		return err
 	}
 	if string(response) != "OK" {
-		return fmt.Errorf("Got non-OK response: %s stderr:", response, p.Stderr())
+		return fmt.Errorf("Got non-OK response: %s stderr: %s", response, p.Stderr())
 	}
 
 	return nil

@@ -26,7 +26,7 @@ func main() {
 		log.Fatalf("%s", err)
 	}
 
-	if len(args) != (g.NumPlayers() + 1) { // +1 to accomodate the game name
+	if len(args) != (g.NumPlayers() + 1) { // +1 to accommodate the game name
 		log.Fatalf("Usage: %s", usage(gameName, g.NumPlayers()))
 	}
 
