@@ -87,7 +87,6 @@ func (p *RunnablePlayer) CleanUp() error {
 	return err2
 }
 
-// Our messages have two lines. First line is the type, second line is the JSON-encoded payload.
 func (p *RunnablePlayer) SendMessage(message interface{}) ([]byte, error) {
 	// Let's use reflection to get the type of this message
 	messageType := reflect.TypeOf(message).Name()
@@ -103,12 +102,17 @@ func (p *RunnablePlayer) SendMessage(message interface{}) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	err = p.writeLine(messageType)
+	m := Message{
+		Type: messageType,
+		Data: messageJSON,
+	}
+
+	mJSON, err := json.Marshal(&m)
 	if err != nil {
 		return []byte{}, err
 	}
 
-	err = p.writeLine(string(messageJSON))
+	err = p.writeLine(string(mJSON))
 	if err != nil {
 		return []byte{}, err
 	}

@@ -1,6 +1,8 @@
 package game
 
+import "encoding/json"
+
 type Message struct {
 	Type string
-	Data []byte
+	Data json.RawMessage
 }
