@@ -70,7 +70,7 @@ func playOneGame(g game.Playable) {
 		if place.Tie {
 			tie = " (tie)"
 		}
-		fmt.Printf("%d.%s %s (%d)", place.Rank, tie, place.Player.Name, place.Player.Order)
+		fmt.Printf("%d.%s %s (player %d)", place.Rank, tie, place.Player.Name, place.Player.Order)
 		if place.HasScore {
 			fmt.Printf(": %d", place.Score)
 		}
