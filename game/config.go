@@ -7,7 +7,6 @@ import (
 
 type Configuration struct {
 	TmpDir     string
-	PlayerDir  string
 	UseSandbox bool
 }
 

@@ -89,15 +89,15 @@ func (g *Game) Play() error {
 	return nil
 }
 
-func (g *Game) AddPlayer(name string, r game.Runnable) {
+func (g *Game) AddPlayer(filepath string, r game.Runnable) {
 	if r == nil {
-		r = game.NewRunnablePlayer("amazons", name)
+		r = game.NewRunnablePlayer("amazons", filepath)
 	}
 
 	player := Player{
 		Player: game.Player{
 			ID:   uuid.NewRandom().String(), // HACK - TODO use actual IDs
-			Name: name,
+			Name: game.FileNameToPlayerName(filepath),
 		},
 		Runnable: r,
 	}

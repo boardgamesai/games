@@ -34,8 +34,8 @@ func main() {
 		log.Fatalf("Usage: %s", usage(gameName, g.NumPlayers()))
 	}
 
-	for _, playerName := range args[1:] {
-		g.AddPlayer(playerName, nil)
+	for _, filename := range args[1:] {
+		g.AddPlayer(filename, nil)
 	}
 
 	if numGames == 1 {

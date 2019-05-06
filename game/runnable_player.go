@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"time"
@@ -23,7 +24,7 @@ const (
 
 type RunnablePlayer struct {
 	gameName     string
-	fileName     string // Non-absolute filename of stored user-written code
+	filePath     string // Path of stored user-written code
 	runDir       string // The tmp dir where this player is running
 	cmd          *exec.Cmd
 	cmdStdin     *io.WriteCloser
@@ -32,10 +33,10 @@ type RunnablePlayer struct {
 	responseChan chan []byte
 }
 
-func NewRunnablePlayer(gameName string, playerName string) *RunnablePlayer {
+func NewRunnablePlayer(gameName string, filePath string) *RunnablePlayer {
 	player := RunnablePlayer{
 		gameName: gameName,
-		fileName: playerName, // TODO these won't always match
+		filePath: filePath,
 	}
 	return &player
 }
@@ -154,12 +155,12 @@ func (p *RunnablePlayer) Stderr() string {
 }
 
 func (p *RunnablePlayer) String() string {
-	return p.fileName
+	return p.filePath
 }
 
 func (p *RunnablePlayer) setupFiles(config *Configuration) error {
 	// Ensure this player exists
-	aiSrcPath := os.Getenv("GOPATH") + config.PlayerDir + "/" + p.gameName + "/" + p.fileName + "/" + p.fileName + ".go"
+	aiSrcPath := p.filePath
 	if _, err := os.Stat(aiSrcPath); os.IsNotExist(err) {
 		return fmt.Errorf("Player file does not exist: %s", aiSrcPath)
 	}
@@ -168,7 +169,7 @@ func (p *RunnablePlayer) setupFiles(config *Configuration) error {
 	tmpDir := os.Getenv("GOPATH") + config.TmpDir + "/" + uuid.NewRandom().String()
 	err := os.Mkdir(tmpDir, 0700)
 	if err != nil {
-		return fmt.Errorf("Could not create tmp dir: %s for player: %s err: %s", tmpDir, p.fileName, err)
+		return fmt.Errorf("Could not create tmp dir: %s for player: %s err: %s", tmpDir, p.filePath, err)
 	}
 	p.runDir = tmpDir
 
@@ -261,4 +262,12 @@ func (p *RunnablePlayer) copyFile(srcPath string, destPath string) error {
 	}
 
 	return nil
+}
+
+func FileNameToPlayerName(filePath string) string {
+	filename := filepath.Base(filePath)
+	if len(filename) >= 3 && filename[len(filename)-3:] == ".go" {
+		filename = filename[0 : len(filename)-3]
+	}
+	return filename
 }
