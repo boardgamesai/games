@@ -166,7 +166,7 @@ func (p *RunnablePlayer) setupFiles(config *Configuration) error {
 	}
 
 	// First create the tmp dir for the player
-	tmpDir := os.Getenv("GOPATH") + config.TmpDir + "/" + uuid.NewRandom().String()
+	tmpDir := config.TmpDir + "/" + uuid.NewRandom().String()
 	err := os.Mkdir(tmpDir, 0700)
 	if err != nil {
 		return fmt.Errorf("Could not create tmp dir: %s for player: %s err: %s", tmpDir, p.filePath, err)
