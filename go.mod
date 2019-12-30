@@ -2,4 +2,7 @@ module github.com/boardgamesai/games
 
 go 1.13
 
-require github.com/pborman/uuid v0.0.0-20170612153648-e790cca94e6c
+require (
+	github.com/google/uuid v1.1.1 // indirect
+	github.com/pborman/uuid v1.2.0
+)
