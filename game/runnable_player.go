@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -11,6 +12,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -174,7 +176,10 @@ func (p *RunnablePlayer) setupFiles(config *Configuration) error {
 	p.runDir = tmpDir
 
 	// Next copy over the main driver file
-	srcPath := p.gameName + "/ai/main.go"
+	srcPath, err := p.driverFilePath()
+	if err != nil {
+		return err
+	}
 	destPath := tmpDir + "/main.go"
 	err = p.copyFile(srcPath, destPath)
 	if err != nil {
@@ -189,6 +194,37 @@ func (p *RunnablePlayer) setupFiles(config *Configuration) error {
 	}
 
 	return nil
+}
+
+func (p *RunnablePlayer) driverFilePath() (string, error) {
+	// First check if we've cloned the games repo and are developing against it directly.
+	path := p.gameName + "/ai/main.go"
+	_, err := os.Stat(path)
+	if err == nil {
+		return path, nil
+	} else if err != nil && !os.IsNotExist(err) {
+		return "", err
+	}
+
+	// This means we were brought in via go modules, so we need to find which version is used
+	buildInfo, ok := debug.ReadBuildInfo()
+	if !ok {
+		return "", errors.New("not using Go modules and cannot locate games lib")
+	}
+	version := ""
+	for _, dep := range buildInfo.Deps {
+		if strings.Contains("boardgamesai/games", dep.Path) {
+			path = dep.Path
+			version = dep.Version
+			break
+		}
+	}
+
+	if version == "" {
+		return "", errors.New("could not determine Go module version of games lib")
+	}
+
+	return os.Getenv("GOPATH") + "/pkg/mod/" + path + "@" + version + "/" + p.gameName + "/ai/main.go", nil
 }
 
 func (p *RunnablePlayer) launchProcess(config *Configuration) error {
