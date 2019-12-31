@@ -6,8 +6,7 @@ import (
 )
 
 type Configuration struct {
-	TmpDir     string
-	UseSandbox bool
+	TmpDir string
 }
 
 const ConfigPath = "config.json"

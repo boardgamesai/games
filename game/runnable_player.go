@@ -193,11 +193,6 @@ func (p *RunnablePlayer) setupFiles(config *Configuration) error {
 
 func (p *RunnablePlayer) launchProcess(config *Configuration) error {
 	cmd := exec.Command("go", "run", p.runDir+"/main.go", p.runDir+"/ai.go")
-	if config.UseSandbox {
-		cmd.Env = os.Environ()
-		cmd.Env = append(cmd.Env, "GOOS=nacl")
-		cmd.Env = append(cmd.Env, "GOARCH=amd64p32")
-	}
 	p.cmd = cmd
 
 	stdin, err := cmd.StdinPipe()
