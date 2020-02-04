@@ -44,24 +44,18 @@ func NewRunnablePlayer(gameName string, filePath string) *RunnablePlayer {
 }
 
 func (p *RunnablePlayer) Run() error {
-	config, err := Config()
-	if err != nil {
+	if err := p.setupFiles(); err != nil {
 		return err
 	}
 
-	err = p.setupFiles(config)
-	if err != nil {
-		return err
-	}
-
-	err = p.launchProcess(config)
-	if err != nil {
+	if err := p.launchProcess(); err != nil {
 		return err
 	}
 
 	// Spin off a goroutine to read the "OK" response so we can block on it below.
 	go p.readResponseAsync()
 
+	var err error
 	select {
 	case response := <-p.responseChan:
 		if string(response) != "OK" {
@@ -160,7 +154,12 @@ func (p *RunnablePlayer) String() string {
 	return p.filePath
 }
 
-func (p *RunnablePlayer) setupFiles(config *Configuration) error {
+func (p *RunnablePlayer) setupFiles() error {
+	config, err := Config()
+	if err != nil {
+		return err
+	}
+
 	// Ensure this player exists
 	aiSrcPath := p.filePath
 	if _, err := os.Stat(aiSrcPath); os.IsNotExist(err) {
@@ -169,8 +168,7 @@ func (p *RunnablePlayer) setupFiles(config *Configuration) error {
 
 	// First create the tmp dir for the player
 	tmpDir := config.TmpDir + "/" + uuid.NewRandom().String()
-	err := os.Mkdir(tmpDir, 0700)
-	if err != nil {
+	if err := os.Mkdir(tmpDir, 0700); err != nil {
 		return fmt.Errorf("Could not create tmp dir: %s for player: %s err: %s", tmpDir, p.filePath, err)
 	}
 	p.runDir = tmpDir
@@ -227,7 +225,7 @@ func (p *RunnablePlayer) driverFilePath() (string, error) {
 	return os.Getenv("GOPATH") + "/pkg/mod/" + path + "@" + version + "/" + p.gameName + "/ai/main.go", nil
 }
 
-func (p *RunnablePlayer) launchProcess(config *Configuration) error {
+func (p *RunnablePlayer) launchProcess() error {
 	cmd := exec.Command("go", "run", p.runDir+"/main.go", p.runDir+"/ai.go")
 	p.cmd = cmd
 

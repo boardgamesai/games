@@ -13,7 +13,12 @@ const ConfigPath = "config.json"
 
 func Config() (*Configuration, error) {
 	file, err := os.Open(ConfigPath)
-	if err != nil {
+	if os.IsNotExist(err) {
+		config := Configuration{
+			TmpDir: "/tmp",
+		}
+		return &config, nil
+	} else if err != nil {
 		return nil, err
 	}
 
