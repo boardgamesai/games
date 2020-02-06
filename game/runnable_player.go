@@ -68,6 +68,23 @@ func (p *RunnablePlayer) Run() error {
 	return err
 }
 
+func (p *RunnablePlayer) Build() (string, error) {
+	if err := p.setupFiles(); err != nil {
+		return "", err
+	}
+	defer p.CleanUp()
+
+	compiledOutput := p.runDir + "/ai"
+	cmd := exec.Command("go", "build", "-o", compiledOutput, p.runDir+"/main.go", p.runDir+"/ai.go")
+	outputBytes, _ := cmd.CombinedOutput()
+	output := string(outputBytes)
+
+	// Last thing, remove any references to the runDir from the error string
+	output = strings.ReplaceAll(output, p.runDir+"/", "")
+
+	return string(output), nil
+}
+
 func (p *RunnablePlayer) CleanUp() error {
 	// First wipe out the tmp dir where we copied everything.
 	err1 := os.RemoveAll(p.runDir)
