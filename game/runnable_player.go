@@ -228,7 +228,7 @@ func (p *RunnablePlayer) driverFilePath() (string, error) {
 	}
 	version := ""
 	for _, dep := range buildInfo.Deps {
-		if strings.Contains("boardgamesai/games", dep.Path) {
+		if strings.Contains(dep.Path, "boardgamesai/games") {
 			path = dep.Path
 			version = dep.Version
 			break
