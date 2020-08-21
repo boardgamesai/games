@@ -67,8 +67,7 @@ func (d *AIDriver) handleSetup(message []byte) (string, error) {
 
 func (d *AIDriver) handleMove(message []byte) (string, error) {
 	moveMessage := tictactoe.MessageMove{}
-	err := json.Unmarshal(message, &moveMessage)
-	if err != nil {
+	if err := json.Unmarshal(message, &moveMessage); err != nil {
 		return "", fmt.Errorf("JSON decode failed: %s err: %s", message, err)
 	}
 
