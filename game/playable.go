@@ -8,6 +8,7 @@ type Playable interface {
 	AddPlayer(name string, r Runnable)
 	Players() []*Player
 	Events() []fmt.Stringer
+	RawEvents() EventLog
 	Places() []Place
 	LoggedOutput(order int) string
 }

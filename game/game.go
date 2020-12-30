@@ -22,6 +22,10 @@ func (g *Game) SetOutput(order int, r Runnable) {
 	g.output[order] = r.Stderr()
 }
 
+func (g *Game) RawEvents() EventLog {
+	return g.EventLog
+}
+
 func (g *Game) Places() []Place {
 	return g.places
 }
