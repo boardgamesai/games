@@ -3,9 +3,10 @@ package game
 import "fmt"
 
 type Player struct {
-	ID    string
-	Name  string
-	Order int // 1-based
+	Runnable `json:"-"`
+	ID       string
+	Name     string
+	Order    int // 1-based
 }
 
 func (p *Player) String() string {

@@ -5,7 +5,6 @@ import "fmt"
 type Playable interface {
 	NumPlayers() int
 	Play() error
-	AddPlayer(name string, r Runnable)
 	Players() []*Player
 	Events() []fmt.Stringer
 	RawEvents() EventLog

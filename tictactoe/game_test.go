@@ -9,8 +9,11 @@ import (
 
 func getGame(moves map[int][][]int) *Game {
 	g := New()
-	for i := 1; i <= g.NumPlayers(); i++ {
-		g.AddPlayer(fmt.Sprintf("player%d", i), &game.RunnablePlayerMock{})
+	players := g.Players()
+	for i := 0; i < g.NumPlayers(); i++ {
+		players[i].ID = fmt.Sprintf("%d", i+1)
+		players[i].Name = fmt.Sprintf("player%d", i)
+		players[i].Runnable = &game.RunnablePlayerMock{}
 	}
 	g.Comms = NewCommsMock(moves)
 	return g

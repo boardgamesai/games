@@ -1,6 +1,7 @@
 package hearts
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/boardgamesai/games/game"
@@ -9,19 +10,17 @@ import (
 
 func getGame(hands map[int][]string) *Game {
 	g := New()
-	g.Comms = &CommsMock{
-		hands: hands,
+
+	for i := 0; i < g.NumPlayers(); i++ {
+		g.players[i].Player.ID = fmt.Sprintf("%d", i+1)
+		g.players[i].Player.Name = fmt.Sprintf("player%d", i+1)
+		g.players[i].Player.Order = i + 1
+		g.players[i].Player.Runnable = &game.RunnablePlayerMock{}
+		g.players[i].Hand = getHand(hands[i+1])
 	}
 
-	for i := 1; i <= g.NumPlayers(); i++ {
-		player := Player{
-			Player: game.Player{
-				Order: i,
-			},
-			Runnable: &game.RunnablePlayerMock{},
-			Hand:     getHand(hands[i]),
-		}
-		g.players = append(g.players, &player)
+	g.Comms = &CommsMock{
+		hands: hands,
 	}
 
 	return g

@@ -6,7 +6,6 @@ import (
 
 	"github.com/boardgamesai/games/game"
 	"github.com/boardgamesai/games/util"
-	"github.com/pborman/uuid"
 )
 
 type Game struct {
@@ -20,6 +19,13 @@ func New() *Game {
 	g := Game{
 		players: []*Player{},
 	}
+	for i := 0; i < g.NumPlayers(); i++ {
+		p := Player{
+			Player: game.Player{},
+		}
+		g.players = append(g.players, &p)
+	}
+
 	g.reset()
 	return &g
 }
@@ -89,28 +95,12 @@ func (g *Game) Play() error {
 	return nil
 }
 
-func (g *Game) AddPlayer(filepath string, r game.Runnable) {
-	if r == nil {
-		r = game.NewRunnablePlayer("fourinarow", filepath)
-	}
-
-	player := Player{
-		Player: game.Player{
-			ID:   uuid.NewRandom().String(), // HACK - TODO use actual IDs
-			Name: game.FileNameToPlayerName(filepath),
-		},
-		Runnable: r,
-	}
-	g.players = append(g.players, &player)
-}
-
 func (g *Game) Players() []*game.Player {
-	if len(g.PlayersCached) == 0 {
-		for _, player := range g.players {
-			g.PlayersCached = append(g.PlayersCached, &(player.Player))
-		}
+	players := []*game.Player{}
+	for _, p := range g.players {
+		players = append(players, &(p.Player))
 	}
-	return g.PlayersCached
+	return players
 }
 
 func (g *Game) Events() []fmt.Stringer {

@@ -2,14 +2,12 @@ package game
 
 type Game struct {
 	EventLog
-	PlayersCached []*Player // We use this to lazily store the game.Players embedded in our game-specific players
-	output        map[int]string
-	places        []Place
+	output map[int]string
+	places []Place
 }
 
 func (g *Game) Reset() {
 	g.EventLog.Clear()
-	g.PlayersCached = []*Player{}
 	g.output = map[int]string{}
 	g.places = []Place{}
 }
