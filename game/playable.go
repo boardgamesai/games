@@ -3,7 +3,6 @@ package game
 import "fmt"
 
 type Playable interface {
-	NumPlayers() int
 	Play() error
 	Players() []*Player
 	Events() []fmt.Stringer

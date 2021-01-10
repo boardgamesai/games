@@ -11,7 +11,7 @@ import (
 func getGame(hands map[int][]string) *Game {
 	g := New()
 
-	for i := 0; i < g.NumPlayers(); i++ {
+	for i := 0; i < g.MetaData().NumPlayers; i++ {
 		g.players[i].Player.ID = fmt.Sprintf("%d", i+1)
 		g.players[i].Player.Name = fmt.Sprintf("player%d", i+1)
 		g.players[i].Player.Order = i + 1

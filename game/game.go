@@ -1,6 +1,7 @@
 package game
 
 type Game struct {
+	Name
 	EventLog
 	output map[int]string
 	places []Place
@@ -10,6 +11,10 @@ func (g *Game) Reset() {
 	g.EventLog.Clear()
 	g.output = map[int]string{}
 	g.places = []Place{}
+}
+
+func (g *Game) MetaData() MetaDataEntry {
+	return MetaData[g.Name]
 }
 
 func (g *Game) LoggedOutput(order int) string {

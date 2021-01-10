@@ -21,7 +21,9 @@ func New() *Game {
 	g := Game{
 		players: []*Player{},
 	}
-	for i := 0; i < g.NumPlayers(); i++ {
+	g.Name = game.Hearts
+
+	for i := 0; i < g.MetaData().NumPlayers; i++ {
 		p := Player{
 			Player: game.Player{},
 		}
@@ -30,10 +32,6 @@ func New() *Game {
 
 	g.reset()
 	return &g
-}
-
-func (g *Game) NumPlayers() int {
-	return 4
 }
 
 func (g *Game) Play() error {

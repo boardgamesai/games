@@ -24,33 +24,33 @@ func main() {
 		log.Fatalf("Usage: %s", usageNoGame())
 	}
 
-	gameName := args[0]
+	gameName := game.Name(args[0])
 	g, err := factory.New(gameName)
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
 
-	if len(args) != (g.NumPlayers() + 1) { // +1 to accommodate the game name
-		log.Fatalf("Usage: %s", usage(gameName, g.NumPlayers()))
+	numPlayers := game.MetaData[gameName].NumPlayers
+	if len(args) != numPlayers+1 { // +1 to accommodate the game name
+		log.Fatalf("Usage: %s", usage(gameName, numPlayers))
 	}
 
 	players := g.Players()
 	for i, filename := range args[1:] {
 		players[i].ID = fmt.Sprintf("%d", i+1)
 		players[i].Name = game.FileNameToPlayerName(filename)
-		players[i].Runnable = game.NewRunnablePlayer(gameName, filename)
+		players[i].Runnable = game.NewRunnablePlayer(string(gameName), filename)
 	}
 
 	if numGames == 1 {
-		playOneGame(g)
+		playOneGame(g, gameName)
 	} else {
 		playMultipleGames(g, numGames)
 	}
 }
 
-func playOneGame(g game.Playable) {
-	err := g.Play()
-	if err != nil {
+func playOneGame(g game.Playable, gameName game.Name) {
+	if err := g.Play(); err != nil {
 		fmt.Printf("game ended with error: %s\n", err)
 		printLoggedOutput(g)
 		return
@@ -74,7 +74,7 @@ func playOneGame(g game.Playable) {
 			tie = " (tie)"
 		}
 		fmt.Printf("%d.%s %s (player %d)", place.Rank, tie, place.Player.Name, place.Player.Order)
-		if place.HasScore {
+		if game.MetaData[gameName].HasScore {
 			fmt.Printf(": %d", place.Score)
 		}
 		fmt.Println("")
@@ -112,7 +112,7 @@ func playMultipleGames(g game.Playable, numGames int) {
 	printSummaryTotals(players, outcomes)
 }
 
-func usage(gameName string, numPlayers int) string {
+func usage(gameName game.Name, numPlayers int) string {
 	players := make([]string, numPlayers)
 	for i := 1; i <= numPlayers; i++ {
 		players[i-1] = fmt.Sprintf("<player%d>", i)

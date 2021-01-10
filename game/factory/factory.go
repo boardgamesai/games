@@ -11,20 +11,20 @@ import (
 	"github.com/boardgamesai/games/tictactoe"
 )
 
-func New(gameName string) (game.Playable, error) {
+func New(gameName game.Name) (game.Playable, error) {
 	var g game.Playable
 	var err error
 
 	switch gameName {
-	case "amazons":
+	case game.Amazons:
 		g = amazons.New()
-	case "fourinarow":
+	case game.FourInARow:
 		g = fourinarow.New()
-	case "hearts":
+	case game.Hearts:
 		g = hearts.New()
-	case "reversi":
+	case game.Reversi:
 		g = reversi.New()
-	case "tictactoe":
+	case game.TicTacToe:
 		g = tictactoe.New()
 	default:
 		err = fmt.Errorf("unknown game: %s", gameName)

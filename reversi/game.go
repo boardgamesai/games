@@ -19,7 +19,9 @@ func New() *Game {
 	g := Game{
 		players: []*Player{},
 	}
-	for i := 0; i < g.NumPlayers(); i++ {
+	g.Name = game.Reversi
+
+	for i := 0; i < g.MetaData().NumPlayers; i++ {
 		p := Player{
 			Player: game.Player{},
 		}
@@ -28,10 +30,6 @@ func New() *Game {
 
 	g.reset()
 	return &g
-}
-
-func (g *Game) NumPlayers() int {
-	return 2
 }
 
 func (g *Game) Play() error {
@@ -148,14 +146,14 @@ func (g *Game) setWinner(p *Player) {
 		player1 := g.players[0]
 		player2 := g.players[1]
 		places = []game.Place{
-			{Player: player1.Player, Rank: 1, Tie: true, Score: scores[player1.Disc], HasScore: true},
-			{Player: player2.Player, Rank: 1, Tie: true, Score: scores[player2.Disc], HasScore: true},
+			{Player: player1.Player, Rank: 1, Tie: true, Score: scores[player1.Disc]},
+			{Player: player2.Player, Rank: 1, Tie: true, Score: scores[player2.Disc]},
 		}
 	} else {
 		loser := g.otherPlayer(p)
 		places = []game.Place{
-			{Player: p.Player, Rank: 1, Tie: false, Score: scores[p.Disc], HasScore: true},
-			{Player: loser.Player, Rank: 2, Tie: false, Score: scores[loser.Disc], HasScore: true},
+			{Player: p.Player, Rank: 1, Tie: false, Score: scores[p.Disc]},
+			{Player: loser.Player, Rank: 2, Tie: false, Score: scores[loser.Disc]},
 		}
 	}
 
