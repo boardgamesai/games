@@ -1,7 +1,6 @@
 package tictactoe
 
 import (
-	"errors"
 	"strings"
 )
 
@@ -15,18 +14,17 @@ type Board struct {
 
 const Empty = ""
 
-var (
-	ErrOutOfBounds = errors.New("out of bounds")
-	ErrNotEmpty    = errors.New("not empty")
-)
-
 func (b *Board) IsValidMove(m Move) error {
 	if m.Row > 2 || m.Row < 0 || m.Col > 2 || m.Col < 0 {
-		return ErrOutOfBounds
+		return OutOfBoundsError{
+			Move: m,
+		}
 	}
 
 	if b.Grid[m.Col][m.Row] != Empty {
-		return ErrNotEmpty
+		return NotEmptyError{
+			Move: m,
+		}
 	}
 
 	return nil

@@ -30,20 +30,20 @@ func TestIsValidMove(t *testing.T) {
 		{"XXX|XXX| XX", 0, 0, nil},
 		{"XXX|XXX|X X", 1, 0, nil},
 		{"XXX|XXX|XX ", 2, 0, nil},
-		{"   |   |   ", 3, 2, ErrOutOfBounds},
-		{"   |   |   ", 2, 3, ErrOutOfBounds},
-		{"   |   |   ", 3, 3, ErrOutOfBounds},
-		{"   |   |   ", -1, 0, ErrOutOfBounds},
-		{"   |   |   ", 0, -1, ErrOutOfBounds},
-		{"X  |   |   ", 0, 2, ErrNotEmpty},
-		{" X |   |   ", 1, 2, ErrNotEmpty},
-		{"  X|   |   ", 2, 2, ErrNotEmpty},
-		{"   |X  |   ", 0, 1, ErrNotEmpty},
-		{"   | X |   ", 1, 1, ErrNotEmpty},
-		{"   |  X|   ", 2, 1, ErrNotEmpty},
-		{"   |   |X  ", 0, 0, ErrNotEmpty},
-		{"   |   | X ", 1, 0, ErrNotEmpty},
-		{"   |   |  X", 2, 0, ErrNotEmpty},
+		{"   |   |   ", 3, 2, OutOfBoundsError{}},
+		{"   |   |   ", 2, 3, OutOfBoundsError{}},
+		{"   |   |   ", 3, 3, OutOfBoundsError{}},
+		{"   |   |   ", -1, 0, OutOfBoundsError{}},
+		{"   |   |   ", 0, -1, OutOfBoundsError{}},
+		{"X  |   |   ", 0, 2, NotEmptyError{}},
+		{" X |   |   ", 1, 2, NotEmptyError{}},
+		{"  X|   |   ", 2, 2, NotEmptyError{}},
+		{"   |X  |   ", 0, 1, NotEmptyError{}},
+		{"   | X |   ", 1, 1, NotEmptyError{}},
+		{"   |  X|   ", 2, 1, NotEmptyError{}},
+		{"   |   |X  ", 0, 0, NotEmptyError{}},
+		{"   |   | X ", 1, 0, NotEmptyError{}},
+		{"   |   |  X", 2, 0, NotEmptyError{}},
 	}
 
 	for _, test := range tests {
@@ -53,7 +53,7 @@ func TestIsValidMove(t *testing.T) {
 			Row: test.row,
 		}
 		err := board.IsValidMove(move)
-		if err != test.expected {
+		if reflect.TypeOf(err) != reflect.TypeOf(test.expected) {
 			t.Errorf("SetValidation board: %s set: [%d, %d] expected: %s got: %s", test.boardStr, test.row, test.col, test.expected, err)
 		}
 	}

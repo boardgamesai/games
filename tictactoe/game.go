@@ -70,7 +70,10 @@ func (g *Game) Play() error {
 		err = g.board.ApplyMove(player.Symbol, move)
 		if err != nil {
 			g.setWinner(g.otherPlayer(player))
-			return fmt.Errorf("player %s committed invalid move: %s err: %s", player, move, err)
+			return game.DQError{
+				ID:  player.ID,
+				Err: err,
+			}
 		}
 
 		e := EventMove{
