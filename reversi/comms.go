@@ -21,6 +21,7 @@ func NewComms(g *Game) *Comms {
 func (c *Comms) Setup(p *Player, other *Player) error {
 	message := MessageSetup{
 		Disc:     p.Disc,
+		ID:       p.ID,
 		Order:    p.Order,
 		Opponent: other,
 	}
@@ -31,7 +32,7 @@ func (c *Comms) GetMove(p *Player) (Move, error) {
 	move := Move{}
 
 	message := MessageMove{
-		NewEvents: c.NewEvents(p.Order),
+		NewEvents: c.NewEvents(p.ID),
 	}
 	responseJSON, err := p.SendMessage(message)
 	if err != nil {

@@ -8,5 +8,5 @@ type Playable interface {
 	Events() []fmt.Stringer
 	RawEvents() EventLog
 	Places() []Place
-	LoggedOutput(order int) string
+	LoggedOutput(id PlayerID) string
 }

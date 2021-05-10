@@ -22,6 +22,7 @@ func (c *Comms) Setup(p *Player, other *Player) error {
 	message := MessageSetup{
 		Symbol:   p.Symbol,
 		Order:    p.Order,
+		ID:       p.ID,
 		Opponent: other,
 	}
 	return p.SendMessageNoResponse(message)
@@ -31,7 +32,7 @@ func (c *Comms) GetMove(p *Player) (Move, error) {
 	move := Move{}
 
 	message := MessageMove{
-		NewEvents: c.NewEvents(p.Order),
+		NewEvents: c.NewEvents(p.ID),
 	}
 	responseJSON, err := p.SendMessage(message)
 	if err != nil {

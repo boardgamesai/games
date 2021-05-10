@@ -1,17 +1,21 @@
 package tictactoe
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/boardgamesai/games/game"
+)
 
 const (
 	EventTypeMove = "move"
 )
 
 type EventMove struct {
-	Order  int
+	ID     game.PlayerID
 	Symbol string
 	Move
 }
 
 func (e EventMove) String() string {
-	return fmt.Sprintf("P%d plays %s at %s", e.Order, e.Symbol, e.Move)
+	return fmt.Sprintf("P%d plays %s at %s", e.ID, e.Symbol, e.Move)
 }

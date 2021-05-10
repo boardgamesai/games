@@ -60,7 +60,8 @@ func (d *Driver) handleSetup(message []byte) (string, error) {
 		return "", fmt.Errorf("JSON decode failed: %s err: %s", message, err)
 	}
 
-	d.state.Order = setupMessage.Order
+	d.state.ID = setupMessage.ID
+	d.state.Position = setupMessage.Position
 	d.state.Players = []hearts.Player{}
 	return "OK", nil
 }
@@ -152,7 +153,7 @@ func (d *Driver) checkForDealPass(events []game.Event) error {
 				return err
 			}
 
-			if passEvent.ToOrder != d.state.Order {
+			if passEvent.ToID != d.state.ID {
 				continue
 			}
 

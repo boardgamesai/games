@@ -8,8 +8,8 @@ import (
 type Event struct {
 	Type string
 	Data json.RawMessage
-	Show map[int]bool `json:"-"` // Player orders who should be shown this event
-	Seen map[int]bool `json:"-"` // Player orders who have seen this event
+	Show map[PlayerID]bool `json:"-"` // Player IDs who should be shown this event
+	Seen map[PlayerID]bool `json:"-"` // Player IDs who have seen this event
 }
 
 func (e Event) String() string {

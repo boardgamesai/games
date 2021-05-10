@@ -7,11 +7,13 @@ import (
 	"strings"
 )
 
-var AllPlayers = []int{-1}
+const ShowAll = PlayerID(0)
+
+var AllPlayers = []PlayerID{ShowAll}
 
 type EventLog []Event
 
-func (el *EventLog) Add(event interface{}, orders []int) error {
+func (el *EventLog) Add(event interface{}, playerIDs []PlayerID) error {
 	eventType := reflect.TypeOf(event).Name()
 	if eventType[0:5] != "Event" {
 		return fmt.Errorf("Invalid type %s passed to AddEvent", eventType)
@@ -23,39 +25,39 @@ func (el *EventLog) Add(event interface{}, orders []int) error {
 		return err
 	}
 
-	show := map[int]bool{}
-	for _, order := range orders {
-		show[order] = true
+	show := map[PlayerID]bool{}
+	for _, playerID := range playerIDs {
+		show[playerID] = true
 	}
 
 	e := Event{
 		Type: eventType,
 		Data: eventJSON,
 		Show: show,
-		Seen: map[int]bool{},
+		Seen: map[PlayerID]bool{},
 	}
 	*el = append(*el, e)
 
 	return nil
 }
 
-func (el *EventLog) NewForPlayer(order int) []Event {
+func (el *EventLog) NewForPlayer(playerID PlayerID) []Event {
 	events := []Event{}
 
 	// We start at the most recent event and move backwards until we find one they've already seen.
 	for i := len(*el) - 1; i >= 0; i-- {
 		e := &((*el)[i])
 
-		if e.Seen[order] {
+		if e.Seen[playerID] {
 			// Found an already-seen one, we're done.
 			break
 		}
 
 		// OK, this is new, mark it seen.
-		e.Seen[order] = true
+		e.Seen[playerID] = true
 
 		// But should we include it?
-		if !(e.Show[-1] || e.Show[order]) {
+		if !(e.Show[ShowAll] || e.Show[playerID]) {
 			continue
 		}
 

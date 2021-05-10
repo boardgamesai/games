@@ -42,7 +42,7 @@ func (g *Game) Play() error {
 	// Launch the player processes
 	for _, player := range g.players {
 		defer player.CleanUp()
-		defer g.SetOutput(player.Order, player)
+		defer g.SetOutput(player.ID, player)
 
 		err := player.Run()
 		if err != nil {
@@ -148,10 +148,10 @@ func (g *Game) dealCards() error {
 		player.Hand.Sort()
 
 		e := EventDeal{
-			Order: player.Order,
-			Hand:  player.Hand,
+			ID:   player.ID,
+			Hand: player.Hand,
 		}
-		g.EventLog.Add(e, []int{player.Order})
+		g.EventLog.Add(e, []game.PlayerID{player.ID})
 	}
 
 	return nil
@@ -187,11 +187,11 @@ func (g *Game) passCards(passDirection PassDirection) error {
 		recipient.Hand.Sort()
 
 		e := EventPass{
-			FromOrder: passer.Order,
-			ToOrder:   recipient.Order,
-			Cards:     passMove.Cards,
+			FromID: passer.ID,
+			ToID:   recipient.ID,
+			Cards:  passMove.Cards,
 		}
-		g.EventLog.Add(e, []int{passer.Order, recipient.Order})
+		g.EventLog.Add(e, []game.PlayerID{passer.ID, recipient.ID})
 	}
 
 	return nil
@@ -292,14 +292,14 @@ func (g *Game) playRound() error {
 
 	g.scores.AddRound(scores)
 
-	eventScores := map[int]int{}
+	eventScores := map[game.PlayerID]int{}
 	for player, score := range scores {
-		eventScores[player.Order] = score
+		eventScores[player.ID] = score
 	}
 
-	totalScores := map[int]int{}
+	totalScores := map[game.PlayerID]int{}
 	for player, score := range g.scores.Totals {
-		totalScores[player.Order] = score
+		totalScores[player.ID] = score
 	}
 
 	e := EventScoreRound{
@@ -313,6 +313,8 @@ func (g *Game) playRound() error {
 
 func (g *Game) playTrick(turn int, trickCount int, heartsBroken bool) (int, int, error) {
 	trick := []card.Card{}
+	plays := map[card.Card]game.PlayerID{}
+	turns := map[card.Card]int{}
 
 	// Collect a play from each player
 	for i := 0; i < 4; i++ {
@@ -329,29 +331,27 @@ func (g *Game) playTrick(turn int, trickCount int, heartsBroken bool) (int, int,
 
 		trick = append(trick, move.Card)
 		player.Hand.Remove(move.Card)
+		plays[move.Card] = player.ID
+		turns[move.Card] = turn
 		turn = util.Increment(turn, 0, 3)
 
 		e := EventPlay{
-			Order: player.Order,
-			Card:  move.Card,
+			ID:   player.ID,
+			Card: move.Card,
 		}
 		g.EventLog.Add(e, game.AllPlayers)
 	}
 
 	// Now see what the trick is worth and who gets it.
-	winner, score := g.evaluateTrick(trick)
-	// This is a little odd - winner is the index of the card in the trick that takes it.
-	// So we need to map that back to players, based on who we know started it.
-	winner = (turn + winner) % 4
+	topCard, score := g.evaluateTrick(trick)
 
 	e := EventScoreTrick{
-		Order: winner + 1,
+		ID:    plays[topCard],
 		Score: score,
 	}
 	g.EventLog.Add(e, game.AllPlayers)
 
-	return winner, score, nil
-
+	return turns[topCard], score, nil
 }
 
 func (g *Game) isValidPlay(p *Player, m PlayMove, trick []card.Card, trickCount int, heartsBroken bool) error {
@@ -374,8 +374,8 @@ func (g *Game) isValidPlay(p *Player, m PlayMove, trick []card.Card, trickCount 
 	return nil
 }
 
-// evaluateTrick returns the trick index of the winning card, and the score of the trick
-func (g *Game) evaluateTrick(trick []card.Card) (int, int) {
+// evaluateTrick returns the winning card and the score of the trick
+func (g *Game) evaluateTrick(trick []card.Card) (card.Card, int) {
 	winner := 0
 	score := 0
 
@@ -395,7 +395,7 @@ func (g *Game) evaluateTrick(trick []card.Card) (int, int) {
 		}
 	}
 
-	return winner, score
+	return trick[winner], score
 }
 
 func (g *Game) shufflePlayers() {

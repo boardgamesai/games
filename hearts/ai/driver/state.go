@@ -7,7 +7,7 @@ import (
 )
 
 type State struct {
-	Order        int
+	Position     int // Table position
 	Players      []hearts.Player
 	Trick        []card.Card
 	TrickCount   int

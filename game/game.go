@@ -3,13 +3,13 @@ package game
 type Game struct {
 	Name
 	EventLog
-	output map[int]string
+	output map[PlayerID]string
 	places []Place
 }
 
 func (g *Game) Reset() {
 	g.EventLog.Clear()
-	g.output = map[int]string{}
+	g.output = map[PlayerID]string{}
 	g.places = []Place{}
 }
 
@@ -17,12 +17,12 @@ func (g *Game) MetaData() MetaDataEntry {
 	return MetaData[g.Name]
 }
 
-func (g *Game) LoggedOutput(order int) string {
-	return g.output[order]
+func (g *Game) LoggedOutput(id PlayerID) string {
+	return g.output[id]
 }
 
-func (g *Game) SetOutput(order int, r Runnable) {
-	g.output[order] = r.Stderr()
+func (g *Game) SetOutput(id PlayerID, r Runnable) {
+	g.output[id] = r.Stderr()
 }
 
 func (g *Game) RawEvents() EventLog {

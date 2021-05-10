@@ -1,17 +1,21 @@
 package reversi
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/boardgamesai/games/game"
+)
 
 const (
 	EventTypeMove = "move"
 )
 
 type EventMove struct {
-	Order int
+	ID game.PlayerID
 	Disc
 	Move
 }
 
 func (e EventMove) String() string {
-	return fmt.Sprintf("P%d/%s plays %s", e.Order, e.Disc, e.Move)
+	return fmt.Sprintf("P%d/%s plays %s", e.ID, e.Disc, e.Move)
 }

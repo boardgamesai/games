@@ -60,6 +60,7 @@ func (d *AIDriver) handleSetup(message []byte) (string, error) {
 	}
 
 	d.state.Symbol = setupMessage.Symbol
+	d.state.ID = setupMessage.ID
 	d.state.Order = setupMessage.Order
 	d.state.Opponent = setupMessage.Opponent
 	return "OK", nil

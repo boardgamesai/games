@@ -21,8 +21,9 @@ func NewComms(g *Game) *Comms {
 
 func (c *Comms) Setup(p *Player, players []*Player) error {
 	message := MessageSetup{
-		Order:   p.Order,
-		Players: players,
+		ID:       p.ID,
+		Position: p.Order,
+		Players:  players,
 	}
 	return p.SendMessageNoResponse(message)
 }
@@ -32,7 +33,7 @@ func (c *Comms) GetPassMove(p *Player, direction PassDirection) (PassMove, error
 
 	message := MessagePass{
 		Direction: direction,
-		NewEvents: c.NewEvents(p.Order),
+		NewEvents: c.NewEvents(p.ID),
 	}
 	responseJSON, err := p.SendMessage(message)
 	if err != nil {
@@ -48,7 +49,7 @@ func (c *Comms) GetPlayMove(p *Player, trick []card.Card) (PlayMove, error) {
 
 	message := MessagePlay{
 		Trick:     trick,
-		NewEvents: c.NewEvents(p.Order),
+		NewEvents: c.NewEvents(p.ID),
 	}
 	responseJSON, err := p.SendMessage(message)
 	if err != nil {

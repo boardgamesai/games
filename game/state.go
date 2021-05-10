@@ -1,6 +1,7 @@
 package game
 
 type State struct {
+	ID        PlayerID
 	AllEvents []Event
 	NewEvents []Event
 }

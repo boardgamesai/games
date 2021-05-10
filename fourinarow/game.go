@@ -40,7 +40,7 @@ func (g *Game) Play() error {
 	// Launch the player processes
 	for _, player := range g.players {
 		defer player.CleanUp()
-		defer g.SetOutput(player.Order, player)
+		defer g.SetOutput(player.ID, player)
 
 		// This copies files to a tmp dir, runs it, and sends a heartbeat message to verify.
 		err := player.Run()
@@ -72,6 +72,7 @@ func (g *Game) Play() error {
 		}
 
 		e := EventMove{
+			ID:    player.ID,
 			Order: player.Order,
 			Move:  move,
 		}

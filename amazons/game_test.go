@@ -11,7 +11,7 @@ func getGame(moves map[int][]Move) *Game {
 	g := New()
 	players := g.Players()
 	for i := 0; i < g.MetaData().NumPlayers; i++ {
-		players[i].ID = fmt.Sprintf("%d", i+1)
+		players[i].ID = game.PlayerID(i + 1)
 		players[i].Name = fmt.Sprintf("player%d", i)
 		players[i].Runnable = &game.RunnablePlayerMock{}
 	}

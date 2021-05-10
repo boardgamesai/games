@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/boardgamesai/games/game"
 	"github.com/boardgamesai/games/hearts/card"
 )
 
@@ -16,58 +17,59 @@ const (
 )
 
 type EventDeal struct {
-	Order int
+	ID game.PlayerID
 	Hand
 }
 
 func (e EventDeal) String() string {
-	return fmt.Sprintf("P%d dealt %s", e.Order, e.Hand)
+	return fmt.Sprintf("P%d dealt %s", e.ID, e.Hand)
 }
 
 type EventPass struct {
-	FromOrder int
-	ToOrder   int
-	Cards     []card.Card
+	FromID game.PlayerID
+	ToID   game.PlayerID
+	Cards  []card.Card
 }
 
 func (e EventPass) String() string {
-	return fmt.Sprintf("P%d passes %s to P%d", e.FromOrder, e.Cards, e.ToOrder)
+	return fmt.Sprintf("P%d passes %s to P%d", e.FromID, e.Cards, e.ToID)
 }
 
 type EventPlay struct {
-	Order int
-	Card  card.Card
+	ID   game.PlayerID
+	Card card.Card
 }
 
 func (e EventPlay) String() string {
-	return fmt.Sprintf("P%d plays %s", e.Order, e.Card)
+	return fmt.Sprintf("P%d plays %s", e.ID, e.Card)
 }
 
 type EventScoreTrick struct {
-	Order int
+	ID    game.PlayerID
 	Score int
 }
 
 func (e EventScoreTrick) String() string {
-	return fmt.Sprintf("P%d wins trick, score %d", e.Order, e.Score)
+	return fmt.Sprintf("P%d wins trick, score %d", e.ID, e.Score)
 }
 
 type EventScoreRound struct {
-	RoundScores map[int]int
-	TotalScores map[int]int
+	RoundScores map[game.PlayerID]int
+	TotalScores map[game.PlayerID]int
 }
 
 func (e EventScoreRound) String() string {
-	roundVals := make([]string, 4)
-	totalVals := make([]string, 4)
+	roundVals := []string{}
+	totalVals := []string{}
 
-	for i := 1; i <= 4; i++ {
-		score, ok := e.RoundScores[i]
+	for playerID, _ := range e.RoundScores {
+		score, ok := e.RoundScores[playerID]
 		if !ok {
 			score = 0
 		}
-		roundVals[i-1] = fmt.Sprintf("P%d:%d", i, score)
-		totalVals[i-1] = fmt.Sprintf("P%d:%d", i, e.TotalScores[i])
+
+		roundVals = append(roundVals, fmt.Sprintf("P%d:%d", playerID, score))
+		totalVals = append(totalVals, fmt.Sprintf("P%d:%d", playerID, e.TotalScores[playerID]))
 	}
 
 	return fmt.Sprintf("Round scores: [%s] Total scores: [%s]", strings.Join(roundVals, " "), strings.Join(totalVals, " "))

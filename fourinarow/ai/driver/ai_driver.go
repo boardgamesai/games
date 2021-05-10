@@ -59,6 +59,7 @@ func (d *AIDriver) handleSetup(message []byte) (string, error) {
 		return "", fmt.Errorf("JSON decode failed: %s err: %s", message, err)
 	}
 
+	d.state.ID = setupMessage.ID
 	d.state.Order = setupMessage.Order
 	d.state.Opponent = setupMessage.Opponent
 	return "OK", nil

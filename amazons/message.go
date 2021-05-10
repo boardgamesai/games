@@ -5,6 +5,7 @@ import "github.com/boardgamesai/games/game"
 type MessageSetup struct {
 	Color    SpaceType
 	Order    int
+	ID       game.PlayerID
 	Opponent *Player
 }
 

@@ -37,7 +37,7 @@ func main() {
 
 	players := g.Players()
 	for i, filename := range args[1:] {
-		players[i].ID = fmt.Sprintf("%d", i+1)
+		players[i].ID = game.PlayerID(i + 1)
 		players[i].Name = game.FileNameToPlayerName(filename)
 		players[i].Runnable = game.NewRunnablePlayer(string(gameName), filename)
 	}
@@ -89,7 +89,7 @@ func playMultipleGames(g game.Playable, numGames int) {
 	players := make([]*game.Player, len(g.Players()))
 	copy(players, g.Players())
 
-	outcomes := map[string]map[int]int{}
+	outcomes := map[game.PlayerID]map[int]int{}
 	for _, player := range players {
 		outcomes[player.ID] = map[int]int{}
 	}
@@ -127,15 +127,15 @@ func usageNoGame() string {
 
 func printLoggedOutput(g game.Playable) {
 	for _, player := range g.Players() {
-		loggedOutput := g.LoggedOutput(player.Order)
+		loggedOutput := g.LoggedOutput(player.ID)
 		if loggedOutput != "" {
-			fmt.Printf("Player %d logged output:\n", player.Order)
+			fmt.Printf("Player %d logged output:\n", player.ID)
 			fmt.Printf("%s\n", loggedOutput)
 		}
 	}
 }
 
-func printSummaryTotals(players []*game.Player, outcomes map[string]map[int]int) {
+func printSummaryTotals(players []*game.Player, outcomes map[game.PlayerID]map[int]int) {
 	// Let's find the longest player name, so we can pad them appropriately
 	maxlen := 0
 	for _, player := range players {

@@ -6,8 +6,9 @@ import (
 )
 
 type MessageSetup struct {
-	Order   int
-	Players []*Player
+	ID       game.PlayerID
+	Position int
+	Players  []*Player
 }
 
 type MessagePass struct {
