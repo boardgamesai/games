@@ -25,10 +25,10 @@ func getEventLog() (*EventLog, error) {
 	if err = l.Add(EventTest1{Val: 1}, AllPlayers); err != nil {
 		return l, err
 	}
-	if err = l.Add(EventTest2{Val: 2}, []int{2}); err != nil {
+	if err = l.Add(EventTest2{Val: 2}, []PlayerID{2}); err != nil {
 		return l, err
 	}
-	if err = l.Add(EventTest3{Val: 3}, []int{1}); err != nil {
+	if err = l.Add(EventTest3{Val: 3}, []PlayerID{1}); err != nil {
 		return l, err
 	}
 
@@ -67,12 +67,12 @@ func TestNewForPlayer(t *testing.T) {
 	}
 
 	tests1 := []struct {
-		order    int
-		expected []int
+		order    PlayerID
+		expected []PlayerID
 	}{
-		{1, []int{1, 3}},
-		{2, []int{1, 2}},
-		{3, []int{1}},
+		{1, []PlayerID{1, 3}},
+		{2, []PlayerID{1, 2}},
+		{3, []PlayerID{1}},
 	}
 
 	for _, test := range tests1 {
@@ -82,33 +82,33 @@ func TestNewForPlayer(t *testing.T) {
 		}
 	}
 
-	l.Add(EventTest3{Val: 4}, []int{2})
+	l.Add(EventTest3{Val: 4}, []PlayerID{2})
 	l.Add(EventTest2{Val: 5}, AllPlayers)
-	l.Add(EventTest1{Val: 6}, []int{2, 3})
+	l.Add(EventTest1{Val: 6}, []PlayerID{2, 3})
 	l.Add(EventTest3{Val: 7}, AllPlayers)
-	l.Add(EventTest2{Val: 8}, []int{2})
-	l.Add(EventTest1{Val: 9}, []int{1})
+	l.Add(EventTest2{Val: 8}, []PlayerID{2})
+	l.Add(EventTest1{Val: 9}, []PlayerID{1})
 
 	tests2 := []struct {
-		order    int
-		expected []int
+		ID       PlayerID
+		expected []PlayerID
 	}{
-		{1, []int{2, 3, 1}},
-		{2, []int{3, 2, 1, 3, 2}},
-		{3, []int{2, 1, 3}},
-		{4, []int{1, 2, 3}}, // The 1 is from getEventLog()
+		{1, []PlayerID{2, 3, 1}},
+		{2, []PlayerID{3, 2, 1, 3, 2}},
+		{3, []PlayerID{2, 1, 3}},
+		{4, []PlayerID{1, 2, 3}}, // The 1 is from getEventLog()
 	}
 
 	for _, test := range tests2 {
-		events, ok := checkLog(l, test.order, test.expected)
+		events, ok := checkLog(l, test.ID, test.expected)
 		if !ok {
-			t.Errorf("Found unexpected events for %d: %+v", test.order, events)
+			t.Errorf("Found unexpected events for %d: %+v", test.ID, events)
 		}
 	}
 }
 
-func checkLog(l *EventLog, order int, expected []int) ([]Event, bool) {
-	events := l.NewForPlayer(order)
+func checkLog(l *EventLog, ID PlayerID, expected []PlayerID) ([]Event, bool) {
+	events := l.NewForPlayer(ID)
 	if len(events) != len(expected) {
 		return events, false
 	}
