@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/boardgamesai/games/game"
@@ -12,9 +13,12 @@ import (
 
 func main() {
 	numGamesFlag := flag.Int("n", 1, "number of games to play")
+	randomFlag := flag.Bool("random", false, "should we play a random game")
 	flag.Parse()
 
 	numGames := *numGamesFlag
+	playRandom := *randomFlag
+
 	if numGames < 1 {
 		log.Fatalf("Invalid number of games: %d\n", numGames)
 	}
@@ -31,12 +35,26 @@ func main() {
 	}
 
 	numPlayers := game.MetaData[gameName].NumPlayers
-	if len(args) != numPlayers+1 { // +1 to accommodate the game name
-		log.Fatalf("Usage: %s", usage(gameName, numPlayers))
+	filenames := []string{}
+	if playRandom {
+		pwd, err := os.Getwd()
+		if err != nil {
+			log.Fatalf("%s", err)
+		}
+
+		path := fmt.Sprintf("%s/%s/ai/example/random/random.go", pwd, gameName)
+		for i := 0; i < numPlayers; i++ {
+			filenames = append(filenames, path)
+		}
+	} else {
+		if len(args) != numPlayers+1 { // +1 to accommodate the game name
+			log.Fatalf("Usage: %s", usage(gameName, numPlayers))
+		}
+		filenames = args[1:]
 	}
 
 	players := g.Players()
-	for i, filename := range args[1:] {
+	for i, filename := range filenames {
 		players[i].ID = game.PlayerID(i + 1)
 		players[i].Name = game.FileNameToPlayerName(filename)
 		players[i].Runnable = game.NewRunnablePlayer(string(gameName), filename)
@@ -56,8 +74,9 @@ func playOneGame(g game.Playable, gameName game.Name) {
 		return
 	}
 
+	fmt.Printf("Ordered players:\n")
 	for _, player := range g.Players() {
-		fmt.Printf("Player %d: %s\n", player.Order, player.Name)
+		fmt.Printf("* %s (ID: %d)\n", player.Name, player.ID)
 	}
 
 	fmt.Println()
@@ -73,7 +92,7 @@ func playOneGame(g game.Playable, gameName game.Name) {
 		if place.Tie {
 			tie = " (tie)"
 		}
-		fmt.Printf("%d.%s %s (player %d)", place.Rank, tie, place.Player.Name, place.Player.Order)
+		fmt.Printf("%d.%s %s (ID: %d)", place.Rank, tie, place.Player.Name, place.Player.ID)
 		if game.MetaData[gameName].HasScore {
 			fmt.Printf(": %d", place.Score)
 		}
