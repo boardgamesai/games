@@ -402,7 +402,7 @@ func (g *Game) shufflePlayers() {
 	util.Shuffle(g.players)
 
 	for i := 1; i <= 4; i++ {
-		g.players[i-1].Order = i
+		g.players[i-1].Position = i
 	}
 }
 

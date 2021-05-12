@@ -85,7 +85,7 @@ func (s *Scores) Players() []*Player {
 	for player, _ := range s.Totals {
 		players = append(players, player)
 	}
-	sort.Slice(players, func(i, j int) bool { return players[i].Order < players[j].Order })
+	sort.Slice(players, func(i, j int) bool { return players[i].Position < players[j].Position })
 	return players
 }
 

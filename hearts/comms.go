@@ -22,7 +22,7 @@ func NewComms(g *Game) *Comms {
 func (c *Comms) Setup(p *Player, players []*Player) error {
 	message := MessageSetup{
 		ID:       p.ID,
-		Position: p.Order,
+		Position: p.Position,
 		Players:  players,
 	}
 	return p.SendMessageNoResponse(message)
