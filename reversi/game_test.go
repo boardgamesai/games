@@ -103,11 +103,11 @@ func TestSkipTurnGame(t *testing.T) {
 	}
 
 	places := g.Places()
-	if places[0].Player.Order != 2 || places[0].Rank != 1 || places[0].Score != 48 {
+	if places[0].Player.ID != g.players[1].ID || places[0].Rank != 1 || places[0].Score != 48 {
 		t.Errorf("Got incorrect places, first player: %+v", places)
 	}
 
-	if places[1].Player.Order != 1 || places[1].Rank != 2 || places[1].Score != 16 {
+	if places[1].Player.ID != g.players[0].ID || places[1].Rank != 2 || places[1].Score != 16 {
 		t.Errorf("Got incorrect places, second player: %+v", places)
 	}
 }
@@ -136,11 +136,11 @@ func TestGameEndsEarlyWipeout(t *testing.T) {
 	}
 
 	places := g.Places()
-	if places[0].Player.Order != 1 || places[0].Rank != 1 || places[0].Score != 13 {
+	if places[0].Player.ID != g.players[0].ID || places[0].Rank != 1 || places[0].Score != 13 {
 		t.Errorf("Got incorrect places, first player: %+v", places)
 	}
 
-	if places[1].Player.Order != 2 || places[1].Rank != 2 || places[1].Score != 0 {
+	if places[1].Player.ID != g.players[1].ID || places[1].Rank != 2 || places[1].Score != 0 {
 		t.Errorf("Got incorrect places, second player: %+v", places)
 	}
 }

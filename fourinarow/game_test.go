@@ -32,10 +32,10 @@ func TestGameWinner(t *testing.T) {
 	}
 
 	places := g.Places()
-	if places[0].Player.Order != 2 || places[0].Rank != 1 || places[0].Tie {
+	if places[0].Player.ID != g.players[1].ID || places[0].Rank != 1 || places[0].Tie {
 		t.Errorf("Got incorrect places, player 1: %+v", places)
 	}
-	if places[1].Player.Order != 1 || places[1].Rank != 2 || places[1].Tie {
+	if places[1].Player.ID != g.players[0].ID || places[1].Rank != 2 || places[1].Tie {
 		t.Errorf("Got incorrect places, player 2: %+v", places)
 	}
 }

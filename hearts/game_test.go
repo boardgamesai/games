@@ -13,8 +13,8 @@ func getGame(hands map[int][]string) *Game {
 
 	for i := 0; i < g.MetaData().NumPlayers; i++ {
 		g.players[i].Player.ID = game.PlayerID(i + 1)
+		g.players[i].Position = i + 1
 		g.players[i].Player.Name = fmt.Sprintf("player%d", i+1)
-		g.players[i].Player.Order = i + 1
 		g.players[i].Player.Runnable = &game.RunnablePlayerMock{}
 		g.players[i].Hand = getHand(hands[i+1])
 	}
@@ -96,7 +96,7 @@ func TestPassCards(t *testing.T) {
 		}
 
 		for _, player := range g.players {
-			h := getHand(test.expectedHands[player.Order])
+			h := getHand(test.expectedHands[player.Position])
 			for i := 1; i < len(player.Hand); i++ {
 				if player.Hand[i] != h[i] {
 					t.Errorf("expected hand: %s got: %s for player %s", h, player.Hand, player)

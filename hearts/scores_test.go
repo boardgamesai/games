@@ -9,7 +9,7 @@ func getPlayers() []*Player {
 	players := make([]*Player, 4)
 	for i := 1; i <= 4; i++ {
 		player := Player{}
-		player.Order = i
+		player.Position = i
 		player.Name = fmt.Sprintf("player%d", i)
 		players[i-1] = &player
 	}
