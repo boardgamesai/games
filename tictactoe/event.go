@@ -11,8 +11,9 @@ const (
 )
 
 type EventMove struct {
-	ID     game.PlayerID
-	Symbol string
+	ID       game.PlayerID
+	Symbol   string
+	WinMoves []Move `json:",omitempty"`
 	Move
 }
 

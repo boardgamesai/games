@@ -143,35 +143,39 @@ func TestPossibleMoves(t *testing.T) {
 
 func TestHasWinner(t *testing.T) {
 	tests := []struct {
-		boardStr string
-		expected bool
+		boardStr  string
+		winMoves  []Move
+		hasWinner bool
 	}{
-		{"   |   |   ", false},
-		{"XXX|   |   ", true},
-		{"   |XXX|   ", true},
-		{"   |   |XXX", true},
-		{"X  |X  |X  ", true},
-		{" X | X | X ", true},
-		{"  X|  X|  X", true},
-		{"X  | X |  X", true},
-		{"  X| X |X  ", true},
-		{"XX |   |   ", false},
-		{" XX|   |   ", false},
-		{"X X|   |   ", false},
-		{"X  |X  |   ", false},
-		{"   |X  |X  ", false},
-		{"X  |   |X  ", false},
-		{"X X| X |   ", false},
-		{"   | X |X X", false},
-		{"XOX|XOO|OXX", false},
-		{"XOX|XOO|OOX", true},
+		{"   |   |   ", nil, false},
+		{"XXX|   |   ", moves(0, 2, 1, 2, 2, 2), true},
+		{"   |XXX|   ", moves(0, 1, 1, 1, 2, 1), true},
+		{"   |   |XXX", moves(0, 0, 1, 0, 2, 0), true},
+		{"X  |X  |X  ", moves(0, 0, 0, 1, 0, 2), true},
+		{" X | X | X ", moves(1, 0, 1, 1, 1, 2), true},
+		{"  X|  X|  X", moves(2, 0, 2, 1, 2, 2), true},
+		{"X  | X |  X", moves(0, 2, 1, 1, 2, 0), true},
+		{"  X| X |X  ", moves(0, 0, 1, 1, 2, 2), true},
+		{"XX |   |   ", nil, false},
+		{" XX|   |   ", nil, false},
+		{"X X|   |   ", nil, false},
+		{"X  |X  |   ", nil, false},
+		{"   |X  |X  ", nil, false},
+		{"X  |   |X  ", nil, false},
+		{"X X| X |   ", nil, false},
+		{"   | X |X X", nil, false},
+		{"XOX|XOO|OXX", nil, false},
+		{"XOX|XOO|OOX", moves(1, 0, 1, 1, 1, 2), true},
 	}
 
 	for _, test := range tests {
 		board := GetBoardFromString(test.boardStr)
-		result := board.HasWinner()
-		if result != test.expected {
-			t.Errorf("IsWinner board: %s expected: %t got: %t", test.boardStr, test.expected, result)
+		hasWinner, winMoves := board.HasWinner()
+		if hasWinner != test.hasWinner {
+			t.Errorf("hasWinner board: %s expected: %t got: %t", test.boardStr, test.hasWinner, hasWinner)
+		}
+		if !reflect.DeepEqual(winMoves, test.winMoves) {
+			t.Errorf("winMoves board: %s expected: %+v got: %+v", test.boardStr, test.winMoves, winMoves)
 		}
 	}
 }

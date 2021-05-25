@@ -40,29 +40,38 @@ func (b *Board) ApplyMove(symbol string, m Move) error {
 	return nil
 }
 
-func (b *Board) HasWinner() bool {
-	// Check rows & columns
-	for i := 0; i < 3; i++ {
-		row := [3]string{}
-		col := [3]string{}
-		for j := 0; j < 3; j++ {
-			row[j] = b.Grid[j][i]
-			col[j] = b.Grid[i][j]
-		}
+func moves(col1, row1, col2, row2, col3, row3 int) []Move {
+	return []Move{
+		Move{Col: col1, Row: row1},
+		Move{Col: col2, Row: row2},
+		Move{Col: col3, Row: row3},
+	}
+}
 
-		if isThreeInARow(row) || isThreeInARow(col) {
-			return true
+func (b *Board) HasWinner() (bool, []Move) {
+	allCoords := [][]Move{
+		moves(0, 0, 1, 0, 2, 0), // rows
+		moves(0, 1, 1, 1, 2, 1),
+		moves(0, 2, 1, 2, 2, 2),
+		moves(0, 0, 0, 1, 0, 2), // cols
+		moves(1, 0, 1, 1, 1, 2),
+		moves(2, 0, 2, 1, 2, 2),
+		moves(0, 0, 1, 1, 2, 2), // diagonals
+		moves(0, 2, 1, 1, 2, 0),
+	}
+
+	for _, coords := range allCoords {
+		vals := [3]string{
+			b.Grid[coords[0].Col][coords[0].Row],
+			b.Grid[coords[1].Col][coords[1].Row],
+			b.Grid[coords[2].Col][coords[2].Row],
+		}
+		if isThreeInARow(vals) {
+			return true, coords
 		}
 	}
 
-	// Have to manually check diagonals
-	diagonal1 := [3]string{b.Grid[0][0], b.Grid[1][1], b.Grid[2][2]}
-	diagonal2 := [3]string{b.Grid[0][2], b.Grid[1][1], b.Grid[2][0]}
-	if isThreeInARow(diagonal1) || isThreeInARow(diagonal2) {
-		return true
-	}
-
-	return false
+	return false, nil
 }
 
 func isThreeInARow(vals [3]string) bool {
