@@ -21,8 +21,8 @@ func getGame(moves map[int][][]int) *Game {
 
 func TestGameWinner(t *testing.T) {
 	moves := map[int][][]int{
-		1: [][]int{[]int{1, 2}, []int{2, 2}, []int{2, 1}},
-		2: [][]int{[]int{1, 1}, []int{0, 2}, []int{2, 0}},
+		1: {[]int{1, 2}, []int{2, 2}, []int{2, 1}},
+		2: {[]int{1, 1}, []int{0, 2}, []int{2, 0}},
 	}
 	g := getGame(moves)
 
@@ -42,8 +42,8 @@ func TestGameWinner(t *testing.T) {
 
 func TestGameTie(t *testing.T) {
 	moves := map[int][][]int{
-		1: [][]int{[]int{1, 1}, []int{2, 1}, []int{0, 2}, []int{1, 2}, []int{0, 0}},
-		2: [][]int{[]int{2, 2}, []int{0, 1}, []int{2, 0}, []int{1, 0}},
+		1: {[]int{1, 1}, []int{2, 1}, []int{0, 2}, []int{1, 2}, []int{0, 0}},
+		2: {[]int{2, 2}, []int{0, 1}, []int{2, 0}, []int{1, 0}},
 	}
 	g := getGame(moves)
 

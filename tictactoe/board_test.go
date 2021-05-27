@@ -92,39 +92,39 @@ func TestPossibleMoves(t *testing.T) {
 	}{
 		{
 			"   |   |   ",
-			[]Move{Move{0, 0}, Move{0, 1}, Move{0, 2}, Move{1, 0}, Move{1, 1}, Move{1, 2}, Move{2, 0}, Move{2, 1}, Move{2, 2}},
+			[]Move{{0, 0}, {0, 1}, {0, 2}, {1, 0}, {1, 1}, {1, 2}, {2, 0}, {2, 1}, {2, 2}},
 		},
 		{
 			"   | X |   ",
-			[]Move{Move{0, 0}, Move{0, 1}, Move{0, 2}, Move{1, 0}, Move{1, 2}, Move{2, 0}, Move{2, 1}, Move{2, 2}},
+			[]Move{{0, 0}, {0, 1}, {0, 2}, {1, 0}, {1, 2}, {2, 0}, {2, 1}, {2, 2}},
 		},
 		{
 			"O  | X |   ",
-			[]Move{Move{0, 0}, Move{0, 1}, Move{1, 0}, Move{1, 2}, Move{2, 0}, Move{2, 1}, Move{2, 2}},
+			[]Move{{0, 0}, {0, 1}, {1, 0}, {1, 2}, {2, 0}, {2, 1}, {2, 2}},
 		},
 		{
 			"O  | X |X  ",
-			[]Move{Move{0, 1}, Move{1, 0}, Move{1, 2}, Move{2, 0}, Move{2, 1}, Move{2, 2}},
+			[]Move{{0, 1}, {1, 0}, {1, 2}, {2, 0}, {2, 1}, {2, 2}},
 		},
 		{
 			"O O| X |X  ",
-			[]Move{Move{0, 1}, Move{1, 0}, Move{1, 2}, Move{2, 0}, Move{2, 1}},
+			[]Move{{0, 1}, {1, 0}, {1, 2}, {2, 0}, {2, 1}},
 		},
 		{
 			"OXO| X |X  ",
-			[]Move{Move{0, 1}, Move{1, 0}, Move{2, 0}, Move{2, 1}},
+			[]Move{{0, 1}, {1, 0}, {2, 0}, {2, 1}},
 		},
 		{
 			"OXO| X |XO ",
-			[]Move{Move{0, 1}, Move{2, 0}, Move{2, 1}},
+			[]Move{{0, 1}, {2, 0}, {2, 1}},
 		},
 		{
 			"OXO| XX|XO ",
-			[]Move{Move{0, 1}, Move{2, 0}},
+			[]Move{{0, 1}, {2, 0}},
 		},
 		{
 			"OXO|OXX|XO ",
-			[]Move{Move{2, 0}},
+			[]Move{{2, 0}},
 		},
 		{
 			"OXO|OXX|XOX",

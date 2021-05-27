@@ -42,9 +42,9 @@ func (b *Board) ApplyMove(symbol string, m Move) error {
 
 func moves(col1, row1, col2, row2, col3, row3 int) []Move {
 	return []Move{
-		Move{Col: col1, Row: row1},
-		Move{Col: col2, Row: row2},
-		Move{Col: col3, Row: row3},
+		{Col: col1, Row: row1},
+		{Col: col2, Row: row2},
+		{Col: col3, Row: row3},
 	}
 }
 
