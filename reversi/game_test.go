@@ -30,7 +30,7 @@ func mv(col, row int) Move {
 
 func TestSkipTurnGame(t *testing.T) {
 	moves := map[int][]Move{
-		1: []Move{
+		1: {
 			mv(2, 4),
 			mv(5, 5),
 			mv(2, 2),
@@ -61,7 +61,7 @@ func TestSkipTurnGame(t *testing.T) {
 			mv(6, 1),
 			mv(7, 1),
 		},
-		2: []Move{
+		2: {
 			mv(4, 5),
 			mv(2, 3),
 			mv(5, 4),
@@ -114,14 +114,14 @@ func TestSkipTurnGame(t *testing.T) {
 
 func TestGameEndsEarlyWipeout(t *testing.T) {
 	moves := map[int][]Move{
-		1: []Move{
+		1: {
 			mv(5, 3),
 			mv(2, 3),
 			mv(4, 5),
 			mv(6, 3),
 			mv(4, 1), // After this white has no discs left
 		},
-		2: []Move{
+		2: {
 			mv(3, 2),
 			mv(5, 4),
 			mv(5, 2),
