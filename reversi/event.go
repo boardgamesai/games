@@ -14,6 +14,8 @@ type EventMove struct {
 	ID game.PlayerID
 	Disc
 	Move
+	Flips []Move
+	Score map[Disc]int
 }
 
 func (e EventMove) String() string {

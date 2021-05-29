@@ -14,6 +14,7 @@ import (
 func main() {
 	numGamesFlag := flag.Int("n", 1, "number of games to play")
 	randomFlag := flag.Bool("random", false, "should we play a random game")
+	rawEventsFlag := flag.Bool("raw", false, "display raw or formatted event log")
 	flag.Parse()
 
 	numGames := *numGamesFlag
@@ -61,13 +62,13 @@ func main() {
 	}
 
 	if numGames == 1 {
-		playOneGame(g, gameName)
+		playOneGame(g, gameName, *rawEventsFlag)
 	} else {
 		playMultipleGames(g, numGames)
 	}
 }
 
-func playOneGame(g game.Playable, gameName game.Name) {
+func playOneGame(g game.Playable, gameName game.Name, showRawEvents bool) {
 	if err := g.Play(); err != nil {
 		fmt.Printf("game ended with error: %s\n", err)
 		printLoggedOutput(g)
@@ -81,8 +82,14 @@ func playOneGame(g game.Playable, gameName game.Name) {
 
 	fmt.Println()
 
-	for i, event := range g.Events() {
-		fmt.Printf("%d. %s\n", i+1, event)
+	if showRawEvents {
+		for i, event := range g.RawEvents() {
+			fmt.Printf("%d. %s\n", i+1, event)
+		}
+	} else {
+		for i, event := range g.Events() {
+			fmt.Printf("%d. %s\n", i+1, event)
+		}
 	}
 
 	fmt.Println("\nFinish places:")

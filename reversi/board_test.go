@@ -108,7 +108,7 @@ func TestApplyMove(t *testing.T) {
 
 	for _, test := range tests {
 		b := GetBoardFromString(trimBoard(test.board))
-		err := b.ApplyMove(Black, test.move)
+		_, err := b.ApplyMove(Black, test.move)
 		if err != nil {
 			t.Errorf("unexpected error applying move %s: %s", test.move, err)
 			continue

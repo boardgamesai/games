@@ -56,10 +56,12 @@ func (b *Board) IsValidMove(d Disc, m Move) error {
 	return nil
 }
 
-func (b *Board) ApplyMove(d Disc, m Move) error {
+func (b *Board) ApplyMove(d Disc, m Move) ([]Move, error) {
+	flips := []Move{}
+
 	err := b.IsValidMove(d, m)
 	if err != nil {
-		return err
+		return flips, err
 	}
 
 	b.Grid[m.Col][m.Row] = d
@@ -74,12 +76,13 @@ func (b *Board) ApplyMove(d Disc, m Move) error {
 			}
 
 			if b.checkLine(newCol, newRow, x, y) {
-				b.flipLine(newCol, newRow, x, y)
+				lineFlips := b.flipLine(newCol, newRow, x, y)
+				flips = append(flips, lineFlips...)
 			}
 		}
 	}
 
-	return nil
+	return flips, nil
 }
 
 func (b *Board) PossibleMoves(d Disc) []Move {
@@ -188,14 +191,18 @@ func (b *Board) checkLine(col, row, deltaCol, deltaRow int) bool {
 	}
 }
 
-func (b *Board) flipLine(col, row, deltaCol, deltaRow int) {
+func (b *Board) flipLine(col, row, deltaCol, deltaRow int) []Move {
 	stopDisc := opposite(b.Grid[col][row])
+	flips := []Move{}
 
 	for b.Grid[col][row] != stopDisc {
+		flips = append(flips, Move{Col: col, Row: row})
 		b.Grid[col][row] = opposite(b.Grid[col][row])
 		col += deltaCol
 		row += deltaRow
 	}
+
+	return flips
 }
 
 func GetBoardFromString(s string) *Board {

@@ -67,16 +67,18 @@ func (g *Game) Play() error {
 			return fmt.Errorf("player %s failed to get move, err: %s stderr: %s", player, err, player.Stderr())
 		}
 
-		err = g.board.ApplyMove(player.Disc, move)
+		flips, err := g.board.ApplyMove(player.Disc, move)
 		if err != nil {
 			g.setWinner(g.otherPlayer(player))
 			return fmt.Errorf("player %s committed invalid move: %s err: %s", player, move, err)
 		}
 
 		e := EventMove{
-			ID:   player.ID,
-			Disc: player.Disc,
-			Move: move,
+			ID:    player.ID,
+			Disc:  player.Disc,
+			Move:  move,
+			Flips: flips,
+			Score: g.board.Score(),
 		}
 		g.EventLog.Add(e, game.AllPlayers)
 
