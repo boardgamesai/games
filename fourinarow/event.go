@@ -10,9 +10,15 @@ const (
 	EventTypeMove = "move"
 )
 
+type Coords struct {
+	Col int
+	Row int
+}
+
 type EventMove struct {
-	ID    game.PlayerID
-	Order int
+	ID        game.PlayerID
+	Order     int
+	WinCoords []Coords `json:",omitempty"`
 	Move
 }
 

@@ -47,12 +47,21 @@ func (b *Board) ApplyMove(order int, m Move) error {
 	return nil
 }
 
-func (b *Board) HasWinner() bool {
+func coords(col1, row1, col2, row2, col3, row3, col4, row4 int) []Coords {
+	return []Coords{
+		{Col: col1, Row: row1},
+		{Col: col2, Row: row2},
+		{Col: col3, Row: row3},
+		{Col: col4, Row: row4},
+	}
+}
+
+func (b *Board) HasWinner() (bool, []Coords) {
 	// First check the columns
 	for i := 0; i <= 6; i++ {
 		for j := 0; j <= 2; j++ {
 			if isFourInARow(b.Grid[i][j], b.Grid[i][j+1], b.Grid[i][j+2], b.Grid[i][j+3]) {
-				return true
+				return true, coords(i, j, i, j+1, i, j+2, i, j+3)
 			}
 		}
 	}
@@ -61,7 +70,7 @@ func (b *Board) HasWinner() bool {
 	for i := 0; i <= 5; i++ {
 		for j := 0; j <= 3; j++ {
 			if isFourInARow(b.Grid[j][i], b.Grid[j+1][i], b.Grid[j+2][i], b.Grid[j+3][i]) {
-				return true
+				return true, coords(j, i, j+1, i, j+2, i, j+3, i)
 			}
 		}
 	}
@@ -79,7 +88,7 @@ func (b *Board) HasWinner() bool {
 	for i := 0; i <= 3; i++ {
 		for j := 0; j <= 2; j++ {
 			if isFourInARow(b.Grid[i][j], b.Grid[i+1][j+1], b.Grid[i+2][j+2], b.Grid[i+3][j+3]) {
-				return true
+				return true, coords(i, j, i+1, j+1, i+2, j+2, i+3, j+3)
 			}
 		}
 	}
@@ -87,12 +96,12 @@ func (b *Board) HasWinner() bool {
 	for i := 3; i <= 6; i++ {
 		for j := 0; j <= 2; j++ {
 			if isFourInARow(b.Grid[i][j], b.Grid[i-1][j+1], b.Grid[i-2][j+2], b.Grid[i-3][j+3]) {
-				return true
+				return true, coords(i, j, i-1, j+1, i-2, j+2, i-3, j+3)
 			}
 		}
 	}
 
-	return false
+	return false, nil
 }
 
 func isFourInARow(g1, g2, g3, g4 int) bool {

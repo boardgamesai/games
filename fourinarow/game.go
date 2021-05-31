@@ -76,9 +76,13 @@ func (g *Game) Play() error {
 			Order: player.Order,
 			Move:  move,
 		}
+		hasWinner, winCoords := g.board.HasWinner()
+		if hasWinner {
+			e.WinCoords = winCoords
+		}
 		g.EventLog.Add(e, game.AllPlayers)
 
-		if g.board.HasWinner() {
+		if hasWinner {
 			g.setWinner(player)
 			break
 		}
