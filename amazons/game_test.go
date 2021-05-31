@@ -38,14 +38,14 @@ func sp(col, row int) Space {
 
 func TestShortestPossibleGame(t *testing.T) {
 	moves := map[int][]Move{
-		1: []Move{
+		1: {
 			mv(sp(0, 3), sp(0, 0), sp(1, 1)),
 			mv(sp(3, 0), sp(1, 0), sp(2, 1)),
 			mv(sp(6, 0), sp(2, 0), sp(3, 1)),
 			mv(sp(9, 3), sp(6, 0), sp(9, 0)),
 			mv(sp(6, 0), sp(3, 0), sp(4, 1)),
 		},
-		2: []Move{
+		2: {
 			mv(sp(0, 6), sp(0, 1), sp(0, 9)),
 			mv(sp(9, 6), sp(9, 5), sp(9, 9)),
 			mv(sp(9, 5), sp(9, 6), sp(9, 8)),
@@ -77,7 +77,7 @@ func TestShortestPossibleGame(t *testing.T) {
 
 func TestPlayGame(t *testing.T) {
 	moves := map[int][]Move{
-		1: []Move{
+		1: {
 			mv(sp(3, 0), sp(3, 3), sp(3, 8)),
 			mv(sp(9, 3), sp(4, 8), sp(4, 9)),
 			mv(sp(4, 8), sp(3, 7), sp(2, 6)),
@@ -117,7 +117,7 @@ func TestPlayGame(t *testing.T) {
 			mv(sp(8, 0), sp(9, 0), sp(8, 0)),
 			mv(sp(9, 0), sp(9, 1), sp(9, 0)),
 		},
-		2: []Move{
+		2: {
 			mv(sp(6, 9), sp(6, 1), sp(2, 5)),
 			mv(sp(3, 9), sp(1, 7), sp(1, 2)),
 			mv(sp(1, 7), sp(1, 4), sp(1, 3)),

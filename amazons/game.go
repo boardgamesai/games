@@ -153,5 +153,5 @@ func (g *Game) otherPlayer(player *Player) *Player {
 }
 
 func (g *Game) String() string {
-	return fmt.Sprintf("%s", g.board)
+	return g.board.String()
 }
