@@ -80,7 +80,7 @@ func (g *Game) Play() error {
 			Flips: flips,
 			Score: g.board.Score(),
 		}
-		g.EventLog.Add(e, game.AllPlayers)
+		g.EventLog.AddAll(e)
 
 		playerTurn = util.Increment(playerTurn, 0, 1)
 		if len(g.board.PossibleMoves(g.players[playerTurn].Disc)) == 0 {

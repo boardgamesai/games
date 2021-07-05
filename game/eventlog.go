@@ -9,8 +9,6 @@ import (
 
 const ShowAll = PlayerID(0)
 
-var AllPlayers = []PlayerID{ShowAll}
-
 type EventLog []Event
 
 func (el *EventLog) Add(event interface{}, playerIDs []PlayerID) error {
@@ -39,6 +37,14 @@ func (el *EventLog) Add(event interface{}, playerIDs []PlayerID) error {
 	*el = append(*el, e)
 
 	return nil
+}
+
+func (el *EventLog) AddAll(event interface{}) error {
+	return el.Add(event, []PlayerID{ShowAll})
+}
+
+func (el *EventLog) AddNone(event interface{}) error {
+	return el.Add(event, []PlayerID{})
 }
 
 func (el *EventLog) NewForPlayer(playerID PlayerID) []Event {

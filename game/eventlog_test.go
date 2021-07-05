@@ -22,7 +22,7 @@ func getEventLog() (*EventLog, error) {
 	l := &EventLog{}
 
 	var err error
-	if err = l.Add(EventTest1{Val: 1}, AllPlayers); err != nil {
+	if err = l.AddAll(EventTest1{Val: 1}); err != nil {
 		return l, err
 	}
 	if err = l.Add(EventTest2{Val: 2}, []PlayerID{2}); err != nil {
@@ -52,7 +52,7 @@ func TestAddEventType(t *testing.T) {
 func TestAddNonEvent(t *testing.T) {
 	l := &EventLog{}
 	r := Place{} // Arbitrary, just can't be an Event*
-	err := l.Add(r, AllPlayers)
+	err := l.AddAll(r)
 	if err == nil {
 		t.Errorf("Expected error adding non-event, didn't get one")
 	} else if !strings.Contains(err.Error(), "Invalid type") {
@@ -83,9 +83,10 @@ func TestNewForPlayer(t *testing.T) {
 	}
 
 	l.Add(EventTest3{Val: 4}, []PlayerID{2})
-	l.Add(EventTest2{Val: 5}, AllPlayers)
+	l.AddAll(EventTest2{Val: 5})
 	l.Add(EventTest1{Val: 6}, []PlayerID{2, 3})
-	l.Add(EventTest3{Val: 7}, AllPlayers)
+	l.AddAll(EventTest3{Val: 7})
+	l.AddNone(EventTest2{Val: 100})
 	l.Add(EventTest2{Val: 8}, []PlayerID{2})
 	l.Add(EventTest1{Val: 9}, []PlayerID{1})
 

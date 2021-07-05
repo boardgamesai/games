@@ -81,7 +81,7 @@ func (g *Game) Play() error {
 			Color: player.Color,
 			Move:  move,
 		}
-		g.EventLog.Add(e, game.AllPlayers)
+		g.EventLog.AddAll(e)
 
 		playerTurn = util.Increment(playerTurn, 0, 1)
 	}

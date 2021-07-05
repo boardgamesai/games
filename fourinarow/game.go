@@ -80,7 +80,7 @@ func (g *Game) Play() error {
 		if hasWinner {
 			e.WinCoords = winCoords
 		}
-		g.EventLog.Add(e, game.AllPlayers)
+		g.EventLog.AddAll(e)
 
 		if hasWinner {
 			g.setWinner(player)
