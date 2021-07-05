@@ -11,8 +11,9 @@ import (
 
 type AIDriver struct {
 	game.AIDriver
-	state *State
-	ai    tictactoeAI
+	state   *State
+	ai      tictactoeAI
+	players map[game.PlayerID]string
 }
 
 func New(ai tictactoeAI) *AIDriver {
@@ -20,7 +21,8 @@ func New(ai tictactoeAI) *AIDriver {
 		state: &State{
 			Board: &tictactoe.Board{},
 		},
-		ai: ai,
+		ai:      ai,
+		players: map[game.PlayerID]string{},
 	}
 }
 
@@ -63,6 +65,10 @@ func (d *AIDriver) handleSetup(message []byte) (string, error) {
 	d.state.ID = setupMessage.ID
 	d.state.Order = setupMessage.Order
 	d.state.Opponent = setupMessage.Opponent
+
+	d.players[d.state.ID] = d.state.Symbol
+	d.players[d.state.Opponent.ID] = d.state.Opponent.Symbol
+
 	return "OK", nil
 }
 
@@ -77,7 +83,7 @@ func (d *AIDriver) handleMove(message []byte) (string, error) {
 		if event.Type == tictactoe.EventTypeMove { // This is our only event type, at least for now
 			e := tictactoe.EventMove{}
 			json.Unmarshal(event.Data, &e)
-			d.state.Board.ApplyMove(e.Symbol, e.Move)
+			d.state.Board.ApplyMove(d.players[e.ID], e.Move)
 		}
 	}
 	d.state.AddEvents(moveMessage.NewEvents)

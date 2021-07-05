@@ -2,21 +2,40 @@ package tictactoe
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/boardgamesai/games/game"
 )
 
 const (
-	EventTypeMove = "move"
+	EventTypeSetup = "setup"
+	EventTypeMove  = "move"
 )
+
+type EventSetupPlayer struct {
+	ID     game.PlayerID
+	Order  int
+	Symbol string
+}
+
+type EventSetup struct {
+	Players []EventSetupPlayer
+}
+
+func (e EventSetup) String() string {
+	players := []string{}
+	for _, p := range e.Players {
+		players = append(players, fmt.Sprintf("%+v", p))
+	}
+	return "Setup " + strings.Join(players, ", ")
+}
 
 type EventMove struct {
 	ID       game.PlayerID
-	Symbol   string
 	WinMoves []Move `json:",omitempty"`
 	Move
 }
 
 func (e EventMove) String() string {
-	return fmt.Sprintf("P%d plays %s at %s", e.ID, e.Symbol, e.Move)
+	return fmt.Sprintf("ID %d plays %s", e.ID, e.Move)
 }
