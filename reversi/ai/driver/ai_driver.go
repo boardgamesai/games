@@ -13,6 +13,7 @@ type AIDriver struct {
 	game.AIDriver
 	state *State
 	ai    reversiAI
+	discs map[game.PlayerID]reversi.Disc
 }
 
 func New(ai reversiAI) *AIDriver {
@@ -20,7 +21,8 @@ func New(ai reversiAI) *AIDriver {
 		state: &State{
 			Board: reversi.NewBoard(),
 		},
-		ai: ai,
+		ai:    ai,
+		discs: map[game.PlayerID]reversi.Disc{},
 	}
 }
 
@@ -63,6 +65,10 @@ func (d *AIDriver) handleSetup(message []byte) (string, error) {
 	d.state.ID = setupMessage.ID
 	d.state.Order = setupMessage.Order
 	d.state.Opponent = setupMessage.Opponent
+
+	d.discs[d.state.ID] = d.state.Disc
+	d.discs[d.state.Opponent.ID] = d.state.Opponent.Disc
+
 	return "OK", nil
 }
 
@@ -78,7 +84,7 @@ func (d *AIDriver) handleMove(message []byte) (string, error) {
 		if event.Type == reversi.EventTypeMove {
 			e := reversi.EventMove{}
 			json.Unmarshal(event.Data, &e)
-			d.state.Board.ApplyMove(e.Disc, e.Move)
+			d.state.Board.ApplyMove(d.discs[e.ID], e.Move)
 		}
 	}
 	d.state.AddEvents(moveMessage.NewEvents)
