@@ -53,7 +53,7 @@ func TestShortestPossibleGame(t *testing.T) {
 			mv(sp(9, 5), sp(8, 4), sp(4, 0)),
 		},
 	}
-	expectedMoves := len(moves[1]) + len(moves[2])
+	expectedMoves := len(moves[1]) + len(moves[2]) + 1 // +1 for the setup event
 
 	g := getGame(moves)
 	err := g.Play()
@@ -157,7 +157,7 @@ func TestPlayGame(t *testing.T) {
 			mv(sp(1, 9), sp(1, 8), sp(1, 9)),
 		},
 	}
-	expectedMoves := len(moves[1]) + len(moves[2])
+	expectedMoves := len(moves[1]) + len(moves[2]) + 1 // +1 for the setup event
 
 	g := getGame(moves)
 	err := g.Play()
