@@ -11,8 +11,9 @@ import (
 
 type AIDriver struct {
 	game.AIDriver
-	state *State
-	ai    amazonsAI
+	state  *State
+	ai     amazonsAI
+	colors map[game.PlayerID]amazons.SpaceType
 }
 
 func New(ai amazonsAI) *AIDriver {
@@ -20,7 +21,8 @@ func New(ai amazonsAI) *AIDriver {
 		state: &State{
 			Board: amazons.NewBoard(),
 		},
-		ai: ai,
+		ai:     ai,
+		colors: map[game.PlayerID]amazons.SpaceType{},
 	}
 }
 
@@ -63,6 +65,10 @@ func (d *AIDriver) handleSetup(message []byte) (string, error) {
 	d.state.Color = setupMessage.Color
 	d.state.Order = setupMessage.Order
 	d.state.Opponent = setupMessage.Opponent
+
+	d.colors[d.state.ID] = d.state.Color
+	d.colors[d.state.Opponent.ID] = d.state.Opponent.Color
+
 	return "OK", nil
 }
 
@@ -78,7 +84,7 @@ func (d *AIDriver) handleMove(message []byte) (string, error) {
 		if event.Type == amazons.EventTypeMove {
 			e := amazons.EventMove{}
 			json.Unmarshal(event.Data, &e)
-			d.state.Board.ApplyMove(e.Color, e.Move)
+			d.state.Board.ApplyMove(d.colors[e.ID], e.Move)
 		}
 	}
 	d.state.AddEvents(moveMessage.NewEvents)

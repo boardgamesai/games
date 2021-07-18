@@ -38,6 +38,11 @@ func (g *Game) Play() error {
 	// Decide who goes first
 	g.shufflePlayers()
 
+	// We need to write down our setup
+	setupEvent := EventSetup{
+		Players: []EventSetupPlayer{},
+	}
+
 	// Launch the player processes
 	for _, player := range g.players {
 		defer player.CleanUp()
@@ -54,7 +59,17 @@ func (g *Game) Play() error {
 		if err != nil {
 			return fmt.Errorf("player %s failed to setup, err: %s", player, err)
 		}
+
+		// Keep track of our setup
+		esp := EventSetupPlayer{
+			ID:    player.ID,
+			Order: player.Order,
+			Color: player.Color,
+		}
+		setupEvent.Players = append(setupEvent.Players, esp)
 	}
+
+	g.EventLog.AddNone(setupEvent)
 
 	// Game is over when someone can't move - a draw is impossible
 	playerTurn := 0
@@ -77,9 +92,8 @@ func (g *Game) Play() error {
 		}
 
 		e := EventMove{
-			ID:    player.ID,
-			Color: player.Color,
-			Move:  move,
+			ID:   player.ID,
+			Move: move,
 		}
 		g.EventLog.AddAll(e)
 
@@ -107,6 +121,10 @@ func (g *Game) Events() []fmt.Stringer {
 		var eStr fmt.Stringer
 
 		switch event.Type {
+		case EventTypeSetup:
+			e := EventSetup{}
+			json.Unmarshal(event.Data, &e)
+			eStr = e
 		case EventTypeMove:
 			e := EventMove{}
 			json.Unmarshal(event.Data, &e)
