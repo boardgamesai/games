@@ -11,8 +11,9 @@ import (
 
 type AIDriver struct {
 	game.AIDriver
-	state *State
-	ai    fourinarowAI
+	state  *State
+	ai     fourinarowAI
+	orders map[game.PlayerID]int
 }
 
 func New(ai fourinarowAI) *AIDriver {
@@ -20,7 +21,8 @@ func New(ai fourinarowAI) *AIDriver {
 		state: &State{
 			Board: &fourinarow.Board{},
 		},
-		ai: ai,
+		ai:     ai,
+		orders: map[game.PlayerID]int{},
 	}
 }
 
@@ -62,6 +64,10 @@ func (d *AIDriver) handleSetup(message []byte) (string, error) {
 	d.state.ID = setupMessage.ID
 	d.state.Order = setupMessage.Order
 	d.state.Opponent = setupMessage.Opponent
+
+	d.orders[d.state.ID] = d.state.Order
+	d.orders[d.state.Opponent.ID] = d.state.Opponent.Order
+
 	return "OK", nil
 }
 
@@ -77,7 +83,7 @@ func (d *AIDriver) handleMove(message []byte) (string, error) {
 		if event.Type == fourinarow.EventTypeMove { // This is our only event type, at least for now
 			e := fourinarow.EventMove{}
 			json.Unmarshal(event.Data, &e)
-			d.state.Board.ApplyMove(e.Order, e.Move)
+			d.state.Board.ApplyMove(d.orders[e.ID], e.Move)
 		}
 	}
 	d.state.AddEvents(moveMessage.NewEvents)
