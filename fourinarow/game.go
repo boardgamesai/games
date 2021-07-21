@@ -79,7 +79,7 @@ func (g *Game) Play() error {
 			return fmt.Errorf("player %s failed to get move, err: %s stderr: %s", player, err, player.Stderr())
 		}
 
-		err = g.board.ApplyMove(player.Order, move)
+		row, err := g.board.ApplyMove(player.Order, move)
 		if err != nil {
 			g.setWinner(g.otherPlayer(player))
 			return fmt.Errorf("player %s committed invalid move: %s err: %s", player, move, err)
@@ -88,6 +88,7 @@ func (g *Game) Play() error {
 		e := EventMove{
 			ID:   player.ID,
 			Move: move,
+			Row:  row,
 		}
 		hasWinner, winCoords := g.board.HasWinner()
 		if hasWinner {

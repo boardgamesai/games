@@ -31,20 +31,23 @@ func (b *Board) IsValidMove(m Move) error {
 	return nil
 }
 
-func (b *Board) ApplyMove(order int, m Move) error {
+func (b *Board) ApplyMove(order int, m Move) (int, error) {
+	row := -1
+
 	err := b.IsValidMove(m)
 	if err != nil {
-		return err
+		return row, err
 	}
 
 	for i := 0; i < 6; i++ {
 		if b.Grid[m.Col][i] == Empty {
 			b.Grid[m.Col][i] = order
+			row = i
 			break
 		}
 	}
 
-	return nil
+	return row, nil
 }
 
 func coords(col1, row1, col2, row2, col3, row3, col4, row4 int) []Coords {

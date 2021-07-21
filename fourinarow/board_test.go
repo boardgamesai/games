@@ -207,6 +207,34 @@ func TestHasWinner(t *testing.T) {
 	}
 }
 
+func TestApplyMoveComputesRow(t *testing.T) {
+	tests := []struct {
+		boardStr    string
+		col         int
+		expectedRow int
+	}{
+		{"0000000|0000000|0000000|0000000|0000000|0000000", 0, 0},
+		{"0000000|0000000|0000000|0000000|0000000|1000000", 0, 1},
+		{"0000000|0000000|0000000|0000000|0000000|1000000", 1, 0},
+		{"0000000|0000000|0000000|0000000|0000000|0100000", 1, 1},
+		{"0000000|0000000|0000000|0000000|0100000|0100000", 1, 2},
+		{"0000000|0000000|0000000|0100000|0100000|0100000", 1, 3},
+		{"0000000|0000000|0100000|0100000|0100000|0100000", 1, 4},
+		{"0000000|0100000|0100000|0100000|0100000|0100000", 1, 5},
+	}
+
+	for _, test := range tests {
+		board := GetBoardFromString(test.boardStr)
+		move := Move{
+			Col: test.col,
+		}
+		row, _ := board.ApplyMove(2, move)
+		if row != test.expectedRow {
+			t.Errorf("TestApplyMoveComputesRow board: %s expected: %d got: %d", test.boardStr, test.expectedRow, row)
+		}
+	}
+}
+
 func TestBoardToFromString(t *testing.T) {
 	boardStr1 := "0010000|0012000|0021000|1012100|2012200|1211212"
 	board := GetBoardFromString(boardStr1)

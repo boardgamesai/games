@@ -37,6 +37,7 @@ type Coords struct {
 type EventMove struct {
 	ID        game.PlayerID
 	WinCoords []Coords `json:",omitempty"`
+	Row       int      // The AI only tells us the column but then we compute the row
 	Move
 }
 
