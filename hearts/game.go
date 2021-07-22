@@ -310,12 +310,12 @@ func (g *Game) playRound() error {
 
 	g.scores.AddRound(scores)
 
-	eventScores := map[game.PlayerID]int{}
+	eventScores := g.getPlayersMap()
 	for player, score := range scores {
 		eventScores[player.ID] = score
 	}
 
-	totalScores := map[game.PlayerID]int{}
+	totalScores := g.getPlayersMap()
 	for player, score := range g.scores.Totals {
 		totalScores[player.ID] = score
 	}
@@ -327,6 +327,14 @@ func (g *Game) playRound() error {
 	g.EventLog.AddAll(e)
 
 	return nil
+}
+
+func (g *Game) getPlayersMap() map[game.PlayerID]int {
+	m := map[game.PlayerID]int{}
+	for _, player := range g.players {
+		m[player.ID] = 0
+	}
+	return m
 }
 
 func (g *Game) playTrick(turn int, trickCount int, heartsBroken bool) (int, int, error) {
