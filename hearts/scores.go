@@ -82,7 +82,7 @@ func (s *Scores) Places() []game.Place {
 // Players maintains the list of players in game order. Our map will return them in random order.
 func (s *Scores) Players() []*Player {
 	players := []*Player{}
-	for player, _ := range s.Totals {
+	for player := range s.Totals {
 		players = append(players, player)
 	}
 	sort.Slice(players, func(i, j int) bool { return players[i].Position < players[j].Position })

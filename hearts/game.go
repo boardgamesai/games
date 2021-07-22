@@ -277,7 +277,7 @@ func (g *Game) playRound() error {
 	if len(tookPoints) == 1 {
 		// Only one player taking points: that's a moonshot
 		moonshotter := &Player{}
-		for player, _ := range tookPoints {
+		for player := range tookPoints {
 			moonshotter = player
 		}
 

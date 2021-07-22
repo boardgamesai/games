@@ -62,7 +62,7 @@ func (e EventScoreRound) String() string {
 	roundVals := []string{}
 	totalVals := []string{}
 
-	for playerID, _ := range e.RoundScores {
+	for playerID := range e.RoundScores {
 		score, ok := e.RoundScores[playerID]
 		if !ok {
 			score = 0
