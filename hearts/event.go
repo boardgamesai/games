@@ -9,12 +9,30 @@ import (
 )
 
 const (
+	EventTypeSetup      = "setup"
 	EventTypeDeal       = "deal"
 	EventTypePass       = "pass"
 	EventTypePlay       = "play"
 	EventTypeScoreTrick = "scoretrick"
 	EventTypeScoreRound = "scoreround"
 )
+
+type EventSetupPlayer struct {
+	ID       game.PlayerID
+	Position int
+}
+
+type EventSetup struct {
+	Players []EventSetupPlayer
+}
+
+func (e EventSetup) String() string {
+	players := []string{}
+	for _, p := range e.Players {
+		players = append(players, fmt.Sprintf("%+v", p))
+	}
+	return "Setup " + strings.Join(players, ", ")
+}
 
 type EventDeal struct {
 	ID game.PlayerID
