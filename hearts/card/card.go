@@ -35,7 +35,7 @@ type Card struct {
 }
 
 var (
-	Suits   = []Suit{Clubs, Diamonds, Hearts, Spades}
+	Suits   = []Suit{Clubs, Diamonds, Spades, Hearts}
 	Ranks   = []Rank{Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace}
 	suitMap = map[Suit]int{}
 	rankMap = map[Rank]int{}
