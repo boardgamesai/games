@@ -83,14 +83,8 @@ func (g *Game) Play() error {
 		}
 
 		err = g.board.ApplyMove(player.Symbol, move)
-		if err != nil {
-			g.setWinner(g.otherPlayer(player))
-			return game.DQError{
-				ID:  player.ID,
-				Err: err,
-			}
-		}
 
+		// Regardless of whether the move was valid or not, we add it to the log
 		e := EventMove{
 			ID:   player.ID,
 			Move: move,
@@ -101,6 +95,17 @@ func (g *Game) Play() error {
 		}
 		g.EventLog.AddAll(e)
 
+		// Now see if the move was valid
+		if err != nil {
+			// Disqualification - game over and the other player wins
+			g.setWinner(g.otherPlayer(player))
+			return game.DQError{
+				ID:  player.ID,
+				Err: err,
+			}
+		}
+
+		// If there was a winner, we stop
 		if hasWinner {
 			g.setWinner(player)
 			break

@@ -69,11 +69,7 @@ func main() {
 }
 
 func playOneGame(g game.Playable, gameName game.Name, showRawEvents bool) {
-	if err := g.Play(); err != nil {
-		fmt.Printf("game ended with error: %s\n", err)
-		printLoggedOutput(g)
-		return
-	}
+	gameErr := g.Play()
 
 	fmt.Printf("Ordered players:\n")
 	for _, player := range g.Players() {
@@ -104,6 +100,10 @@ func playOneGame(g game.Playable, gameName game.Name, showRawEvents bool) {
 			fmt.Printf(": %d", place.Score)
 		}
 		fmt.Println("")
+	}
+
+	if gameErr != nil {
+		fmt.Printf("*** game ended with error: %s\n", gameErr)
 	}
 
 	printLoggedOutput(g)
