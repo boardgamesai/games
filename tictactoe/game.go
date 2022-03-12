@@ -79,7 +79,17 @@ func (g *Game) Play() error {
 		move, err := g.Comms.GetMove(player)
 		if err != nil {
 			g.setWinner(g.otherPlayer(player))
-			return fmt.Errorf("player %s failed to get move, err: %s stderr: %s", player, err, player.Stderr())
+			switch e := err.(type) {
+			case game.DQError:
+				// If this is a DQError, we need to augment it with the player ID,
+				// which we may not know about where the error occurred
+				return game.DQError{
+					ID:   player.ID,
+					Type: e.Type,
+					Msg:  e.Msg,
+				}
+			}
+			return err
 		}
 
 		err = g.board.ApplyMove(player.Symbol, move)
@@ -100,8 +110,9 @@ func (g *Game) Play() error {
 			// Disqualification - game over and the other player wins
 			g.setWinner(g.otherPlayer(player))
 			return game.DQError{
-				ID:  player.ID,
-				Err: err,
+				ID:   player.ID,
+				Type: game.DQTypeInvalidMove,
+				Msg:  err.Error(),
 			}
 		}
 

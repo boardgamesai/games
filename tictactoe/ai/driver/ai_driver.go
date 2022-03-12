@@ -29,13 +29,25 @@ func New(ai tictactoeAI) *AIDriver {
 func (d *AIDriver) Run() {
 	d.Setup()
 
+	defer func() {
+		if r := recover(); r != nil {
+			// This is a panic, trap the error msg and return here
+			err := game.DQError{
+				ID:   d.state.ID,
+				Type: game.DQTypeRuntime,
+				Msg:  fmt.Sprintf("%s", r),
+			}
+			d.PrintErrorResponse(&err)
+		}
+	}()
+
 	for {
 		message, err := d.GetNextMessage()
 		if err != nil {
 			log.Fatalf("Error getting next message: %s", err)
 		}
 
-		response := ""
+		var response []byte
 
 		switch message.Type {
 		case "setup":
@@ -50,15 +62,15 @@ func (d *AIDriver) Run() {
 			log.Fatalf("Error handling message: %+v err: %s", message, err)
 		}
 
-		fmt.Println(response)
+		d.PrintResponse(response)
 	}
 }
 
-func (d *AIDriver) handleSetup(message []byte) (string, error) {
+func (d *AIDriver) handleSetup(message []byte) ([]byte, error) {
 	setupMessage := tictactoe.MessageSetup{}
 	err := json.Unmarshal(message, &setupMessage)
 	if err != nil {
-		return "", fmt.Errorf("JSON decode failed: %s err: %s", message, err)
+		return []byte{}, fmt.Errorf("JSON decode failed: %s err: %s", message, err)
 	}
 
 	d.state.Symbol = setupMessage.Symbol
@@ -69,13 +81,13 @@ func (d *AIDriver) handleSetup(message []byte) (string, error) {
 	d.players[d.state.ID] = d.state.Symbol
 	d.players[d.state.Opponent.ID] = d.state.Opponent.Symbol
 
-	return "OK", nil
+	return d.OkJSON(), nil
 }
 
-func (d *AIDriver) handleMove(message []byte) (string, error) {
+func (d *AIDriver) handleMove(message []byte) ([]byte, error) {
 	moveMessage := tictactoe.MessageMove{}
 	if err := json.Unmarshal(message, &moveMessage); err != nil {
-		return "", fmt.Errorf("JSON decode failed: %s err: %s", message, err)
+		return []byte{}, fmt.Errorf("JSON decode failed: %s err: %s", message, err)
 	}
 
 	// Apply all our move events to keep the board up to date
@@ -91,7 +103,7 @@ func (d *AIDriver) handleMove(message []byte) (string, error) {
 	move := d.ai.GetMove(*d.state)
 	moveJSON, err := json.Marshal(&move)
 	if err != nil {
-		return "", fmt.Errorf("JSON encode failed: %+v err: %s", move, err)
+		return []byte{}, fmt.Errorf("JSON encode failed: %+v err: %s", move, err)
 	}
-	return string(moveJSON), nil
+	return moveJSON, nil
 }

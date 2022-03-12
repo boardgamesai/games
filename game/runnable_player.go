@@ -140,10 +140,24 @@ func (p *RunnablePlayer) SendMessage(message interface{}) ([]byte, error) {
 	case response = <-p.responseChan:
 		// Do nothing, the assignment above is the important thing
 	case <-time.After(time.Second * PlayerResponseTimeout):
-		err = fmt.Errorf("Timeout reading player response")
+		err := DQError{
+			Type: DQTypeTimeout,
+			Msg:  "Timeout reading player response",
+		}
+		return response, err
 	}
 
-	return response, err
+	// Take apart our response so we can return the error if there is one
+	mr := MessageResponse{}
+	if err := json.Unmarshal(response, &mr); err != nil {
+		return response, err
+	}
+
+	if mr.Err != nil {
+		return []byte{}, mr.Err
+	}
+
+	return mr.Data, nil
 }
 
 func (p *RunnablePlayer) SendMessageNoResponse(message interface{}) error {
@@ -151,7 +165,7 @@ func (p *RunnablePlayer) SendMessageNoResponse(message interface{}) error {
 	if err != nil {
 		return err
 	}
-	if string(response) != "OK" {
+	if string(response) != "\"OK\"" { // Hack - this is JSON-encoded
 		return fmt.Errorf("Got non-OK response: %s stderr: %s", response, p.Stderr())
 	}
 
@@ -280,7 +294,7 @@ func (p *RunnablePlayer) readResponseAsync() {
 		return
 	}
 
-	// Chop off the newline, if there is one.
+	// Chop off the trailing newline, if there is one.
 	responseLen := len(response)
 	if responseLen >= 1 && response[responseLen-1] == '\n' {
 		response = response[:responseLen-1]

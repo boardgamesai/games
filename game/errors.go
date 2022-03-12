@@ -1,17 +1,29 @@
 package game
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+type DQType string
+
+const (
+	DQTypeInvalidMove = DQType("badmove")
+	DQTypeTimeout     = DQType("timeout")
+	DQTypeRuntime     = DQType("runtime")
+)
 
 // DQError = DisqualifiedError
 type DQError struct {
-	ID  PlayerID
-	Err error
+	ID   PlayerID
+	Type DQType
+	Msg  string
 }
 
 func (e DQError) Error() string {
-	return fmt.Sprintf("player %d disqualified: %s", e.ID, e.Err.Error())
+	return fmt.Sprintf("player %d disqualified (%s): %s", e.ID, e.Type, e.Msg)
 }
 
 func (e DQError) Unwrap() error {
-	return e.Err
+	return errors.New(e.Msg)
 }
