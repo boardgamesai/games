@@ -62,7 +62,10 @@ func (p *RunnablePlayer) Run() error {
 			err = fmt.Errorf("Got non-OK response when launching player: %s stderr: %s", response, p.Stderr())
 		}
 	case <-time.After(time.Second * PlayerLaunchTimeout):
-		err = fmt.Errorf("Timeout launching player")
+		err = DQError{
+			Type: DQTypeTimeout,
+			Msg:  fmt.Sprintf("Timeout launching player after %ds", PlayerLaunchTimeout),
+		}
 	}
 
 	return err
@@ -142,7 +145,7 @@ func (p *RunnablePlayer) SendMessage(message interface{}) ([]byte, error) {
 	case <-time.After(time.Second * PlayerResponseTimeout):
 		err := DQError{
 			Type: DQTypeTimeout,
-			Msg:  "Timeout reading player response",
+			Msg:  fmt.Sprintf("Timeout reading player response after %ds", PlayerResponseTimeout),
 		}
 		return response, err
 	}
