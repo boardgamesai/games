@@ -80,14 +80,12 @@ func (g *Game) Play() error {
 		if err != nil {
 			g.setWinner(g.otherPlayer(player))
 			switch e := err.(type) {
+			// If this is a DQError, we need to augment it with the player ID,
+			// which we may not know about where the error occurred
 			case game.DQError:
-				// If this is a DQError, we need to augment it with the player ID,
-				// which we may not know about where the error occurred
-				return game.DQError{
-					ID:   player.ID,
-					Type: e.Type,
-					Msg:  e.Msg,
-				}
+				return g.AddDQErrorID(&e, player.ID)
+			case *game.DQError:
+				return g.AddDQErrorID(e, player.ID)
 			}
 			return err
 		}

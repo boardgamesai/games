@@ -36,3 +36,11 @@ func (g *Game) Places() []Place {
 func (g *Game) SetPlaces(places []Place) {
 	g.places = places
 }
+
+func (g *Game) AddDQErrorID(err *DQError, id PlayerID) *DQError {
+	return &DQError{
+		ID:   id,
+		Type: err.Type,
+		Msg:  err.Msg,
+	}
+}
