@@ -49,6 +49,18 @@ func (d *AIDriver) PrintErrorResponse(err *DQError) error {
 	return d.doPrint(m)
 }
 
+func (d *AIDriver) HandlePanic(id PlayerID) {
+	if r := recover(); r != nil {
+		// This is a panic, trap the error msg and return here
+		err := DQError{
+			ID:   id,
+			Type: DQTypeRuntime,
+			Msg:  fmt.Sprintf("%s", r),
+		}
+		d.PrintErrorResponse(&err)
+	}
+}
+
 func (d *AIDriver) doPrint(m MessageResponse) error {
 	messageJSON, err := json.Marshal(m)
 	if err != nil {

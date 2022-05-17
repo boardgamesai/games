@@ -28,18 +28,7 @@ func New(ai tictactoeAI) *AIDriver {
 
 func (d *AIDriver) Run() {
 	d.Setup()
-
-	defer func() {
-		if r := recover(); r != nil {
-			// This is a panic, trap the error msg and return here
-			err := game.DQError{
-				ID:   d.state.ID,
-				Type: game.DQTypeRuntime,
-				Msg:  fmt.Sprintf("%s", r),
-			}
-			d.PrintErrorResponse(&err)
-		}
-	}()
+	defer d.HandlePanic(d.state.ID)
 
 	for {
 		message, err := d.GetNextMessage()
