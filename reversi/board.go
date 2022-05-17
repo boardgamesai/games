@@ -34,11 +34,15 @@ func NewBoard() *Board {
 
 func (b *Board) IsValidMove(d Disc, m Move) error {
 	if offBoard(m.Col, m.Row) {
-		return ErrOutOfBounds
+		return OutOfBoundsError{
+			Move: m,
+		}
 	}
 
 	if b.Grid[m.Col][m.Row] != Empty {
-		return ErrNotEmpty
+		return NotEmptyError{
+			Move: m,
+		}
 	}
 
 	found := false
@@ -50,7 +54,9 @@ func (b *Board) IsValidMove(d Disc, m Move) error {
 	}
 
 	if !found {
-		return ErrInvalid
+		return IllegalMoveError{
+			Move: m,
+		}
 	}
 
 	return nil
