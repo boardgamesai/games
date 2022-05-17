@@ -25,15 +25,15 @@ func TestIsValidMove(t *testing.T) {
 		{"1111011|1111111|1111111|1111111|1111111|1111111", 4, nil},
 		{"1111101|1111111|1111111|1111111|1111111|1111111", 5, nil},
 		{"1111110|1111111|1111111|1111111|1111111|1111111", 6, nil},
-		{"0000000|0000000|0000000|0000000|0000000|0000000", -1, ErrOutOfBounds},
-		{"0000000|0000000|0000000|0000000|0000000|0000000", 7, ErrOutOfBounds},
-		{"1000000|1111111|1111111|1111111|1111111|1111111", 0, ErrColumnFull},
-		{"0100000|1111111|1111111|1111111|1111111|1111111", 1, ErrColumnFull},
-		{"0010000|1111111|1111111|1111111|1111111|1111111", 2, ErrColumnFull},
-		{"0001000|1111111|1111111|1111111|1111111|1111111", 3, ErrColumnFull},
-		{"0000100|1111111|1111111|1111111|1111111|1111111", 4, ErrColumnFull},
-		{"0000010|1111111|1111111|1111111|1111111|1111111", 5, ErrColumnFull},
-		{"0000001|1111111|1111111|1111111|1111111|1111111", 6, ErrColumnFull},
+		{"0000000|0000000|0000000|0000000|0000000|0000000", -1, OutOfBoundsError{}},
+		{"0000000|0000000|0000000|0000000|0000000|0000000", 7, OutOfBoundsError{}},
+		{"1000000|1111111|1111111|1111111|1111111|1111111", 0, ColumnFullError{}},
+		{"0100000|1111111|1111111|1111111|1111111|1111111", 1, ColumnFullError{}},
+		{"0010000|1111111|1111111|1111111|1111111|1111111", 2, ColumnFullError{}},
+		{"0001000|1111111|1111111|1111111|1111111|1111111", 3, ColumnFullError{}},
+		{"0000100|1111111|1111111|1111111|1111111|1111111", 4, ColumnFullError{}},
+		{"0000010|1111111|1111111|1111111|1111111|1111111", 5, ColumnFullError{}},
+		{"0000001|1111111|1111111|1111111|1111111|1111111", 6, ColumnFullError{}},
 	}
 
 	for _, test := range tests {
@@ -42,8 +42,8 @@ func TestIsValidMove(t *testing.T) {
 			Col: test.col,
 		}
 		err := board.IsValidMove(move)
-		if err != test.expected {
-			t.Errorf("SetValidation board: %s move: %d expected: %s got: %s", test.boardStr, test.col, test.expected, err)
+		if reflect.TypeOf(err) != reflect.TypeOf(test.expected) {
+			t.Errorf("IsValidMove board: %s move: %d expected: %s got: %s", test.boardStr, test.col, test.expected, err)
 		}
 	}
 }

@@ -1,7 +1,6 @@
 package fourinarow
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -14,18 +13,17 @@ type Board struct {
 
 const Empty = 0
 
-var (
-	ErrOutOfBounds = errors.New("out of bounds")
-	ErrColumnFull  = errors.New("column full")
-)
-
 func (b *Board) IsValidMove(m Move) error {
 	if m.Col > 6 || m.Col < 0 {
-		return ErrOutOfBounds
+		return OutOfBoundsError{
+			Move: m,
+		}
 	}
 
 	if b.Grid[m.Col][5] != Empty {
-		return ErrColumnFull
+		return ColumnFullError{
+			Move: m,
+		}
 	}
 
 	return nil
