@@ -28,6 +28,7 @@ func New(ai fourinarowAI) *AIDriver {
 
 func (d *AIDriver) Run() {
 	d.Setup()
+	defer d.HandlePanic(d.state.ID)
 
 	for {
 		message, err := d.GetNextMessage()
@@ -35,7 +36,7 @@ func (d *AIDriver) Run() {
 			log.Fatalf("Error getting next message: %s", err)
 		}
 
-		response := ""
+		var response []byte
 
 		switch message.Type {
 		case "setup":
@@ -50,15 +51,15 @@ func (d *AIDriver) Run() {
 			log.Fatalf("Error handling message: %+v err: %s", message, err)
 		}
 
-		fmt.Println(response)
+		d.PrintResponse(response)
 	}
 }
 
-func (d *AIDriver) handleSetup(message []byte) (string, error) {
+func (d *AIDriver) handleSetup(message []byte) ([]byte, error) {
 	setupMessage := fourinarow.MessageSetup{}
 	err := json.Unmarshal(message, &setupMessage)
 	if err != nil {
-		return "", fmt.Errorf("JSON decode failed: %s err: %s", message, err)
+		return []byte{}, fmt.Errorf("JSON decode failed: %s err: %s", message, err)
 	}
 
 	d.state.ID = setupMessage.ID
@@ -68,14 +69,14 @@ func (d *AIDriver) handleSetup(message []byte) (string, error) {
 	d.orders[d.state.ID] = d.state.Order
 	d.orders[d.state.Opponent.ID] = d.state.Opponent.Order
 
-	return "OK", nil
+	return d.OkJSON(), nil
 }
 
-func (d *AIDriver) handleMove(message []byte) (string, error) {
+func (d *AIDriver) handleMove(message []byte) ([]byte, error) {
 	moveMessage := fourinarow.MessageMove{}
 	err := json.Unmarshal(message, &moveMessage)
 	if err != nil {
-		return "", fmt.Errorf("JSON decode failed: %s err: %s", message, err)
+		return []byte{}, fmt.Errorf("JSON decode failed: %s err: %s", message, err)
 	}
 
 	// Apply all our move events to keep the board up to date
@@ -91,7 +92,7 @@ func (d *AIDriver) handleMove(message []byte) (string, error) {
 	move := d.ai.GetMove(*d.state)
 	moveJSON, err := json.Marshal(&move)
 	if err != nil {
-		return "", fmt.Errorf("JSON encode failed: %+v err: %s", move, err)
+		return []byte{}, fmt.Errorf("JSON encode failed: %+v err: %s", move, err)
 	}
-	return string(moveJSON), nil
+	return moveJSON, nil
 }
