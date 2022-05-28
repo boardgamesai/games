@@ -82,20 +82,33 @@ func (g *Game) Play() error {
 		move, err := g.Comms.GetMove(player)
 		if err != nil {
 			g.setWinner(g.otherPlayer(player))
-			return fmt.Errorf("player %s failed to get move, err: %s stderr: %s", player, err, player.Stderr())
+			switch e := err.(type) {
+			// If this is a DQError, we need to augment it with the player ID,
+			// which we may not know about where the error occurred
+			case game.DQError:
+				return g.AddDQErrorID(&e, player.ID)
+			case *game.DQError:
+				return g.AddDQErrorID(e, player.ID)
+			}
+			return err
 		}
 
 		err = g.board.ApplyMove(player.Color, move)
-		if err != nil {
-			g.setWinner(g.otherPlayer(player))
-			return fmt.Errorf("player %s committed invalid move: %s err: %s", player, move, err)
-		}
 
 		e := EventMove{
 			ID:   player.ID,
 			Move: move,
 		}
 		g.EventLog.AddAll(e)
+
+		if err != nil {
+			g.setWinner(g.otherPlayer(player))
+			return game.DQError{
+				ID:   player.ID,
+				Type: game.DQTypeInvalidMove,
+				Msg:  err.Error(),
+			}
+		}
 
 		playerTurn = util.Increment(playerTurn, 0, 1)
 	}

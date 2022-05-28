@@ -1,7 +1,6 @@
 package amazons
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 )
@@ -32,13 +31,6 @@ type Board struct {
 	Grid [10][10]SpaceType
 }
 
-var (
-	ErrOutOfBounds  = errors.New("out of bounds")
-	ErrInvalidFrom  = errors.New("invalid from")
-	ErrInvalidTo    = errors.New("invalid to")
-	ErrInvalidArrow = errors.New("invalid arrow")
-)
-
 func NewBoard() *Board {
 	b := Board{}
 	b.Grid[0][3] = White
@@ -54,19 +46,27 @@ func NewBoard() *Board {
 
 func (b *Board) IsValidMove(s SpaceType, m Move) error {
 	if offBoard(m.From.Col, m.From.Row) || offBoard(m.To.Col, m.To.Row) || offBoard(m.Arrow.Col, m.Arrow.Row) {
-		return ErrOutOfBounds
+		return OutOfBoundsError{
+			Move: m,
+		}
 	}
 
 	if b.Grid[m.From.Col][m.From.Row] != s {
-		return ErrInvalidFrom
+		return InvalidFromError{
+			Move: m,
+		}
 	}
 
 	if !moveListContains(b.PossibleMoves(m.From), m.To) {
-		return ErrInvalidTo
+		return InvalidToError{
+			Move: m,
+		}
 	}
 
 	if !moveListContains(b.PossibleArrows(m.From, m.To), m.Arrow) {
-		return ErrInvalidArrow
+		return InvalidArrowError{
+			Move: m,
+		}
 	}
 
 	return nil

@@ -2,6 +2,7 @@ package amazons
 
 import (
 	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
 	"testing"
@@ -38,7 +39,7 @@ func TestIsValidMove(t *testing.T) {
 				To:    space(6, 3),
 				Arrow: space(6, 8),
 			},
-			ErrOutOfBounds,
+			OutOfBoundsError{},
 		},
 		{
 			Move{
@@ -46,7 +47,7 @@ func TestIsValidMove(t *testing.T) {
 				To:    space(6, 10),
 				Arrow: space(6, 8),
 			},
-			ErrOutOfBounds,
+			OutOfBoundsError{},
 		},
 		{
 			Move{
@@ -54,7 +55,7 @@ func TestIsValidMove(t *testing.T) {
 				To:    space(6, 3),
 				Arrow: space(6, -5),
 			},
-			ErrOutOfBounds,
+			OutOfBoundsError{},
 		},
 		{
 			Move{
@@ -62,7 +63,7 @@ func TestIsValidMove(t *testing.T) {
 				To:    space(6, 3),
 				Arrow: space(6, 8),
 			},
-			ErrInvalidFrom,
+			InvalidFromError{},
 		},
 		{
 			Move{
@@ -70,7 +71,7 @@ func TestIsValidMove(t *testing.T) {
 				To:    space(6, 3),
 				Arrow: space(6, 8),
 			},
-			ErrInvalidFrom,
+			InvalidFromError{},
 		},
 		{
 			Move{
@@ -78,7 +79,7 @@ func TestIsValidMove(t *testing.T) {
 				To:    space(0, 1),
 				Arrow: space(6, 8),
 			},
-			ErrInvalidTo,
+			InvalidToError{},
 		},
 		{
 			Move{
@@ -86,7 +87,7 @@ func TestIsValidMove(t *testing.T) {
 				To:    space(3, 0),
 				Arrow: space(6, 8),
 			},
-			ErrInvalidTo,
+			InvalidToError{},
 		},
 		{
 			Move{
@@ -94,7 +95,7 @@ func TestIsValidMove(t *testing.T) {
 				To:    space(3, 9),
 				Arrow: space(6, 8),
 			},
-			ErrInvalidTo,
+			InvalidToError{},
 		},
 		{
 			Move{
@@ -102,7 +103,7 @@ func TestIsValidMove(t *testing.T) {
 				To:    space(6, 3),
 				Arrow: space(6, 9),
 			},
-			ErrInvalidArrow,
+			InvalidArrowError{},
 		},
 		{
 			Move{
@@ -110,7 +111,7 @@ func TestIsValidMove(t *testing.T) {
 				To:    space(6, 3),
 				Arrow: space(6, 3),
 			},
-			ErrInvalidArrow,
+			InvalidArrowError{},
 		},
 		{
 			Move{
@@ -118,7 +119,7 @@ func TestIsValidMove(t *testing.T) {
 				To:    space(6, 3),
 				Arrow: space(0, 4),
 			},
-			ErrInvalidArrow,
+			InvalidArrowError{},
 		},
 	}
 
@@ -137,7 +138,7 @@ func TestIsValidMove(t *testing.T) {
 
 	for i, test := range tests {
 		err := board.IsValidMove(White, test.move)
-		if err != test.expectedErr {
+		if reflect.TypeOf(err) != reflect.TypeOf(test.expectedErr) {
 			t.Errorf("(%d) expected error %s, got %s", i, test.expectedErr, err)
 		}
 	}
