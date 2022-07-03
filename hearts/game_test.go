@@ -2,6 +2,7 @@ package hearts
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/boardgamesai/games/game"
@@ -107,6 +108,82 @@ func TestPassCards(t *testing.T) {
 	}
 }
 
+func TestIsValidPass(t *testing.T) {
+	tests := []struct {
+		pass     []string
+		expected error
+	}{
+		{
+			[]string{"2C", "3C", "4C"},
+			nil,
+		},
+		{
+			[]string{"2C", "3C"},
+			InvalidPassError{},
+		},
+		{
+			[]string{"2C", "3C", "4C", "5C"},
+			InvalidPassError{},
+		},
+		{
+			[]string{"2C", "3C", "4H"},
+			InvalidPassError{},
+		},
+		{
+			[]string{"2C", "3C", "3C"},
+			InvalidPassError{},
+		},
+	}
+
+	g := New()
+	for _, test := range tests {
+		move := PassMove{
+			Cards: getCards(test.pass),
+		}
+		hand := getHand([]string{"2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC", "AC"})
+		err := g.isValidPass(hand, move)
+		if reflect.TypeOf(err) != reflect.TypeOf(test.expected) {
+			t.Errorf("expected err: %s got: %s", test.expected, err)
+		}
+	}
+}
+
+func TestIsValidPlay(t *testing.T) {
+	tests := []struct {
+		trick    []string
+		play     string
+		expected error
+	}{
+		{
+			[]string{"5D"},
+			"4D",
+			nil,
+		},
+		{
+			[]string{"5D"},
+			"3S", // Not in hand
+			InvalidPlayError{},
+		},
+		{
+			[]string{"5D"},
+			"KS", // Can't be played
+			IllegalPlayError{},
+		},
+	}
+
+	g := New()
+	for _, test := range tests {
+		move := PlayMove{
+			Card: card.FromString(test.play),
+		}
+		hand := getHand([]string{"KS", "4D", "7C", "TH", "JH", "QH", "KH"})
+		err := g.isValidPlay(hand, move, getCards(test.trick), 6, false)
+		if reflect.TypeOf(err) != reflect.TypeOf(test.expected) {
+			t.Errorf("expected err: %s got: %s", test.expected, err)
+		}
+	}
+}
+
 func TestPlayRound(t *testing.T) {
 	tests := []struct {
 		hands          map[int][]string
@@ -158,46 +235,38 @@ func TestPlayRound(t *testing.T) {
 	}
 }
 
-func getTrick(cards []string) []card.Card {
-	trick := []card.Card{}
-	for _, c := range cards {
-		trick = append(trick, card.FromString(c))
-	}
-	return trick
-}
-
 func TestEvaluateTrick(t *testing.T) {
 	tests := []struct {
-		trick     []card.Card
+		trick     []string
 		expWinner string
 		expScore  int
 	}{
-		{getTrick([]string{"2C", "3C", "4C", "5C"}), "5C", 0},
-		{getTrick([]string{"2C", "3C", "5C", "4C"}), "5C", 0},
-		{getTrick([]string{"2C", "5C", "3C", "4C"}), "5C", 0},
-		{getTrick([]string{"5C", "2C", "3C", "4C"}), "5C", 0},
-		{getTrick([]string{"3C", "9D", "TH", "JS"}), "3C", 1},
-		{getTrick([]string{"7H", "4S", "8H", "AC"}), "8H", 2},
-		{getTrick([]string{"7H", "AH", "8H", "AC"}), "AH", 3},
-		{getTrick([]string{"7H", "KH", "8H", "AH"}), "AH", 4},
-		{getTrick([]string{"8D", "2D", "3D", "QS"}), "8D", 13},
-		{getTrick([]string{"8D", "2H", "3D", "QS"}), "8D", 14},
-		{getTrick([]string{"8D", "2H", "3H", "QS"}), "8D", 15},
-		{getTrick([]string{"8H", "2H", "3H", "QS"}), "8H", 16},
-		{getTrick([]string{"8D", "2D", "JD", "QS"}), "JD", 3},
-		{getTrick([]string{"8D", "2H", "JD", "QS"}), "JD", 4},
-		{getTrick([]string{"8H", "2H", "JD", "QS"}), "8H", 5},
-		{getTrick([]string{"8D", "QD", "JD", "7C"}), "QD", -10},
-		{getTrick([]string{"8D", "QH", "JD", "7C"}), "JD", -9},
-		{getTrick([]string{"8D", "QH", "JD", "7H"}), "JD", -8},
-		{getTrick([]string{"8H", "QH", "JD", "7H"}), "QH", -7},
-		{getTrick([]string{"5C", "2D", "KS", "8D"}), "5C", 0},
+		{[]string{"2C", "3C", "4C", "5C"}, "5C", 0},
+		{[]string{"2C", "3C", "5C", "4C"}, "5C", 0},
+		{[]string{"2C", "5C", "3C", "4C"}, "5C", 0},
+		{[]string{"5C", "2C", "3C", "4C"}, "5C", 0},
+		{[]string{"3C", "9D", "TH", "JS"}, "3C", 1},
+		{[]string{"7H", "4S", "8H", "AC"}, "8H", 2},
+		{[]string{"7H", "AH", "8H", "AC"}, "AH", 3},
+		{[]string{"7H", "KH", "8H", "AH"}, "AH", 4},
+		{[]string{"8D", "2D", "3D", "QS"}, "8D", 13},
+		{[]string{"8D", "2H", "3D", "QS"}, "8D", 14},
+		{[]string{"8D", "2H", "3H", "QS"}, "8D", 15},
+		{[]string{"8H", "2H", "3H", "QS"}, "8H", 16},
+		{[]string{"8D", "2D", "JD", "QS"}, "JD", 3},
+		{[]string{"8D", "2H", "JD", "QS"}, "JD", 4},
+		{[]string{"8H", "2H", "JD", "QS"}, "8H", 5},
+		{[]string{"8D", "QD", "JD", "7C"}, "QD", -10},
+		{[]string{"8D", "QH", "JD", "7C"}, "JD", -9},
+		{[]string{"8D", "QH", "JD", "7H"}, "JD", -8},
+		{[]string{"8H", "QH", "JD", "7H"}, "QH", -7},
+		{[]string{"5C", "2D", "KS", "8D"}, "5C", 0},
 	}
 
 	g := New()
 
 	for _, test := range tests {
-		topCard, score := g.evaluateTrick(test.trick)
+		topCard, score := g.evaluateTrick(getCards(test.trick))
 		if topCard != card.FromString(test.expWinner) {
 			t.Errorf("Got topCard %s for trick %+v, expected %s", topCard, test.trick, test.expWinner)
 		}

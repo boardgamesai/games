@@ -71,22 +71,16 @@ func (g *Game) Play() error {
 
 	passDirection := PassLeft
 	for !g.gameOver() {
-		err := g.dealCards()
-		if err != nil {
-			// TODO how to correctly handle when we bomb out here? Who wins?
-			return err
-		}
+		g.dealCards()
 
 		if passDirection != PassNone {
-			err = g.passCards(passDirection)
-			if err != nil {
+			if err := g.passCards(passDirection); err != nil {
 				// TODO how to correctly handle when we bomb out here? Who wins?
 				return err
 			}
 		}
 
-		err = g.playRound()
-		if err != nil {
+		if err := g.playRound(); err != nil {
 			// TODO how to correctly handle when we bomb out here? Who wins?
 			return err
 		}
@@ -156,7 +150,7 @@ func (g *Game) reset() {
 	}
 }
 
-func (g *Game) dealCards() error {
+func (g *Game) dealCards() {
 	g.deck.Shuffle()
 	for _, player := range g.players {
 		player.Hand = Hand{}
@@ -171,8 +165,6 @@ func (g *Game) dealCards() error {
 		}
 		g.EventLog.Add(e, []game.PlayerID{player.ID})
 	}
-
-	return nil
 }
 
 func (g *Game) passCards(passDirection PassDirection) error {
@@ -185,7 +177,7 @@ func (g *Game) passCards(passDirection PassDirection) error {
 			return fmt.Errorf("player %s failed to pass cards, err: %s stderr: %s", player, err, player.Stderr())
 		}
 
-		err = g.isValidPass(player, passMove)
+		err = g.isValidPass(player.Hand, passMove)
 		if err != nil {
 			// TODO: who wins if this happens?
 			return fmt.Errorf("player %s made invalid pass: %+v err: %s", player, passMove, err)
@@ -215,16 +207,31 @@ func (g *Game) passCards(passDirection PassDirection) error {
 	return nil
 }
 
-func (g *Game) isValidPass(p *Player, m PassMove) error {
+func (g *Game) isValidPass(h Hand, m PassMove) error {
 	if len(m.Cards) != 3 {
-		return fmt.Errorf("player %s passed %d cards, expected 3", p, len(m.Cards))
+		return InvalidPassError{
+			Move: m,
+			Msg:  "didn't get 3 pass cards",
+		}
 	}
 
 	// Make sure each card is actually in their hand
+	passCards := map[card.Card]bool{}
 	for _, passCard := range m.Cards {
-		if !p.Hand.Contains(passCard) {
-			return fmt.Errorf("player %s passed card not in their hand: %s", p, passCard)
+		if !h.Contains(passCard) {
+			return InvalidPassError{
+				Move: m,
+				Msg:  "passed card not in hand",
+			}
 		}
+
+		if passCards[passCard] {
+			return InvalidPassError{
+				Move: m,
+				Msg:  "duplicate pass card",
+			}
+		}
+		passCards[passCard] = true
 	}
 
 	return nil
@@ -350,7 +357,7 @@ func (g *Game) playTrick(turn int, trickCount int, heartsBroken bool) (int, int,
 			return -1, -1, err
 		}
 
-		err = g.isValidPlay(player, move, trick, trickCount, heartsBroken)
+		err = g.isValidPlay(player.Hand, move, trick, trickCount, heartsBroken)
 		if err != nil {
 			return -1, -1, err
 		}
@@ -380,21 +387,22 @@ func (g *Game) playTrick(turn int, trickCount int, heartsBroken bool) (int, int,
 	return turns[topCard], score, nil
 }
 
-func (g *Game) isValidPlay(p *Player, m PlayMove, trick []card.Card, trickCount int, heartsBroken bool) error {
+func (g *Game) isValidPlay(h Hand, m PlayMove, trick []card.Card, trickCount int, heartsBroken bool) error {
 	// First make sure the card is actually in their hand.
-	if !p.Hand.Contains(m.Card) {
-		return fmt.Errorf("player %s played card not in their hand: %s", p, m.Card)
+	if !h.Contains(m.Card) {
+		return InvalidPlayError{m}
 	}
 
 	// Now see if the card can actually be played.
 	valid := false
-	for _, card := range p.Hand.PossiblePlays(trick, trickCount, heartsBroken) {
+	for _, card := range h.PossiblePlays(trick, trickCount, heartsBroken) {
 		if m.Card == card {
 			valid = true
+			break
 		}
 	}
 	if !valid {
-		return fmt.Errorf("player %s played invalid card: %s", p, m.Card)
+		return IllegalPlayError{m}
 	}
 
 	return nil
