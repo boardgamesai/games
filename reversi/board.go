@@ -1,7 +1,6 @@
 package reversi
 
 import (
-	"errors"
 	"strings"
 )
 
@@ -16,12 +15,6 @@ const (
 type Board struct {
 	Grid [8][8]Disc
 }
-
-var (
-	ErrOutOfBounds = errors.New("out of bounds")
-	ErrNotEmpty    = errors.New("not empty")
-	ErrInvalid     = errors.New("invalid move")
-)
 
 func NewBoard() *Board {
 	b := Board{}
