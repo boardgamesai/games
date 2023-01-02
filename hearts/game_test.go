@@ -91,7 +91,7 @@ func TestPassCards(t *testing.T) {
 	for _, test := range tests {
 		g := getGame(test.hands)
 
-		err := g.passCards(test.passDirection)
+		_, err := g.passCards(test.passDirection)
 		if err != nil {
 			t.Errorf("Unexpected error: %s", err)
 		}
@@ -104,46 +104,6 @@ func TestPassCards(t *testing.T) {
 					break
 				}
 			}
-		}
-	}
-}
-
-func TestIsValidPass(t *testing.T) {
-	tests := []struct {
-		pass     []string
-		expected error
-	}{
-		{
-			[]string{"2C", "3C", "4C"},
-			nil,
-		},
-		{
-			[]string{"2C", "3C"},
-			InvalidPassError{},
-		},
-		{
-			[]string{"2C", "3C", "4C", "5C"},
-			InvalidPassError{},
-		},
-		{
-			[]string{"2C", "3C", "4H"},
-			InvalidPassError{},
-		},
-		{
-			[]string{"2C", "3C", "3C"},
-			InvalidPassError{},
-		},
-	}
-
-	g := New()
-	for _, test := range tests {
-		move := PassMove{
-			Cards: getCards(test.pass),
-		}
-		hand := getHand([]string{"2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC", "AC"})
-		err := g.isValidPass(hand, move)
-		if reflect.TypeOf(err) != reflect.TypeOf(test.expected) {
-			t.Errorf("expected err: %s got: %s", test.expected, err)
 		}
 	}
 }
@@ -221,7 +181,7 @@ func TestPlayRound(t *testing.T) {
 	for _, test := range tests {
 		g := getGame(test.hands)
 
-		err := g.playRound()
+		_, err := g.playRound()
 		if err != nil {
 			t.Errorf("Unexpected error: %s", err)
 		}

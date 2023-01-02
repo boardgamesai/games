@@ -1,6 +1,8 @@
 package hearts
 
 import (
+	"errors"
+	"fmt"
 	"sort"
 
 	"github.com/boardgamesai/games/hearts/card"
@@ -37,6 +39,27 @@ func (h Hand) Contains(c card.Card) bool {
 
 func (h Hand) Sort() {
 	sort.Slice(h, func(i, j int) bool { return h[i].Index() < h[j].Index() })
+}
+
+func (h Hand) IsValidPass(cards []card.Card) error {
+	if len(cards) != 3 {
+		return errors.New("didn't get 3 pass cards")
+	}
+
+	// Make sure each card is actually in their hand
+	passCards := map[card.Card]bool{}
+	for _, passCard := range cards {
+		if !h.Contains(passCard) {
+			return fmt.Errorf("passed card %s not in hand", passCard)
+		}
+
+		if passCards[passCard] {
+			return fmt.Errorf("duplicated card %s", passCard)
+		}
+		passCards[passCard] = true
+	}
+
+	return nil
 }
 
 func (h Hand) PossiblePlays(trick []card.Card, trickCount int, heartsBroken bool) []card.Card {

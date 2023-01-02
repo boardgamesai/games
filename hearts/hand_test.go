@@ -2,6 +2,7 @@ package hearts
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/boardgamesai/games/hearts/card"
@@ -147,6 +148,48 @@ func TestPossiblePlays(t *testing.T) {
 		if !reflect.DeepEqual(plays, getCards(test.expectedPlays)) {
 			t.Errorf("Got plays %s, expected %s for hand %s, trick %s, trickCount %d, heartsBroken %t",
 				plays, test.expectedPlays, test.hand, test.trick, test.trickCount, test.heartsBroken)
+		}
+	}
+}
+
+func TestIsValidPass(t *testing.T) {
+	tests := []struct {
+		pass        []string
+		expectedErr string
+	}{
+		{
+			[]string{"2C", "3C", "4C"},
+			"",
+		},
+		{
+			[]string{"2C", "3C"},
+			"didn't get",
+		},
+		{
+			[]string{"2C", "3C", "4C", "5C"},
+			"didn't get",
+		},
+		{
+			[]string{"2C", "3C", "4H"},
+			"not in hand",
+		},
+		{
+			[]string{"2C", "3C", "3C"},
+			"duplicated card",
+		},
+	}
+
+	for _, test := range tests {
+		hand := getHand([]string{"2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC", "AC"})
+		err := hand.IsValidPass(getCards(test.pass))
+		if err != nil {
+			if test.expectedErr == "" {
+				t.Errorf("expected no error, got %s, pass: %+v", err, test.pass)
+			} else if !strings.Contains(err.Error(), test.expectedErr) {
+				t.Errorf("expected error %s, got %s, pass: %+v", test.expectedErr, err, test.pass)
+			}
+		} else if test.expectedErr != "" {
+			t.Errorf("expected error %s, got none, pass: %+v", test.expectedErr, test.pass)
 		}
 	}
 }

@@ -25,6 +25,7 @@ func New(ai heartsAI) *Driver {
 
 func (d *Driver) Run() {
 	d.Setup()
+	defer d.HandlePanic(d.state.ID)
 
 	for {
 		message, err := d.GetNextMessage()
@@ -32,7 +33,7 @@ func (d *Driver) Run() {
 			log.Fatalf("Error getting next message: %s", err)
 		}
 
-		response := ""
+		var response []byte
 
 		switch message.Type {
 		case "setup":
@@ -49,33 +50,33 @@ func (d *Driver) Run() {
 			log.Fatalf("Error handling message: %+v err: %s", message, err)
 		}
 
-		fmt.Println(response)
+		d.PrintResponse(response)
 	}
 }
 
-func (d *Driver) handleSetup(message []byte) (string, error) {
+func (d *Driver) handleSetup(message []byte) ([]byte, error) {
 	setupMessage := hearts.MessageSetup{}
 	err := json.Unmarshal(message, &setupMessage)
 	if err != nil {
-		return "", fmt.Errorf("JSON decode failed: %s err: %s", message, err)
+		return []byte{}, fmt.Errorf("JSON decode failed: %s err: %s", message, err)
 	}
 
 	d.state.ID = setupMessage.ID
 	d.state.Position = setupMessage.Position
 	d.state.Players = []hearts.Player{}
-	return "OK", nil
+	return d.OkJSON(), nil
 }
 
-func (d *Driver) handlePass(message []byte) (string, error) {
+func (d *Driver) handlePass(message []byte) ([]byte, error) {
 	passMessage := hearts.MessagePass{}
 	err := json.Unmarshal(message, &passMessage)
 	if err != nil {
-		return "", fmt.Errorf("JSON decode failed: %s err: %s", message, err)
+		return []byte{}, fmt.Errorf("JSON decode failed: %s err: %s", message, err)
 	}
 
 	err = d.checkForDealPass(passMessage.NewEvents)
 	if err != nil {
-		return "", err
+		return []byte{}, err
 	}
 
 	d.state.AddEvents(passMessage.NewEvents)
@@ -90,21 +91,21 @@ func (d *Driver) handlePass(message []byte) (string, error) {
 
 	moveJSON, err := json.Marshal(&move)
 	if err != nil {
-		return "", fmt.Errorf("JSON encode failed: %+v err: %s", move, err)
+		return []byte{}, fmt.Errorf("JSON encode failed: %+v err: %s", move, err)
 	}
-	return string(moveJSON), nil
+	return moveJSON, nil
 }
 
-func (d *Driver) handlePlay(message []byte) (string, error) {
+func (d *Driver) handlePlay(message []byte) ([]byte, error) {
 	playMessage := hearts.MessagePlay{}
 	err := json.Unmarshal(message, &playMessage)
 	if err != nil {
-		return "", fmt.Errorf("JSON decode failed: %s err: %s", message, err)
+		return []byte{}, fmt.Errorf("JSON decode failed: %s err: %s", message, err)
 	}
 
 	err = d.checkForDealPass(playMessage.NewEvents)
 	if err != nil {
-		return "", err
+		return []byte{}, err
 	}
 
 	d.state.AddEvents(playMessage.NewEvents)
@@ -125,9 +126,9 @@ func (d *Driver) handlePlay(message []byte) (string, error) {
 
 	moveJSON, err := json.Marshal(&move)
 	if err != nil {
-		return "", fmt.Errorf("JSON encode failed: %+v err: %s", move, err)
+		return []byte{}, fmt.Errorf("JSON encode failed: %+v err: %s", move, err)
 	}
-	return string(moveJSON), nil
+	return moveJSON, nil
 }
 
 func (d *Driver) checkForDealPass(events []game.Event) error {

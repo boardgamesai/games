@@ -74,14 +74,14 @@ func (g *Game) Play() error {
 		g.dealCards()
 
 		if passDirection != PassNone {
-			if err := g.passCards(passDirection); err != nil {
-				// TODO how to correctly handle when we bomb out here? Who wins?
+			if dqPlayer, err := g.passCards(passDirection); err != nil {
+				g.setLoser(dqPlayer)
 				return err
 			}
 		}
 
-		if err := g.playRound(); err != nil {
-			// TODO how to correctly handle when we bomb out here? Who wins?
+		if dqPlayer, err := g.playRound(); err != nil {
+			g.setLoser(dqPlayer)
 			return err
 		}
 
@@ -167,20 +167,31 @@ func (g *Game) dealCards() {
 	}
 }
 
-func (g *Game) passCards(passDirection PassDirection) error {
+func (g *Game) passCards(passDirection PassDirection) (*Player, error) {
 	// First collect all the passes...
 	passes := map[*Player]PassMove{}
 	for _, player := range g.players {
 		passMove, err := g.Comms.GetPassMove(player, passDirection)
 		if err != nil {
-			// TODO: who wins if this happens?
-			return fmt.Errorf("player %s failed to pass cards, err: %s stderr: %s", player, err, player.Stderr())
+			switch e := err.(type) {
+			case game.DQError:
+				return player, g.AddDQErrorID(&e, player.ID)
+			case *game.DQError:
+				return player, g.AddDQErrorID(e, player.ID)
+			}
+			return player, err
 		}
 
 		err = g.isValidPass(player.Hand, passMove)
 		if err != nil {
-			// TODO: who wins if this happens?
-			return fmt.Errorf("player %s made invalid pass: %+v err: %s", player, passMove, err)
+			// Make sure to log the bad pass before we bomb out
+			g.logPassMove(player, g.getPassRecipient(player, passDirection), passMove.Cards)
+
+			return player, game.DQError{
+				ID:   player.ID,
+				Type: game.DQTypeInvalidMove,
+				Msg:  err.Error(),
+			}
 		}
 
 		passes[player] = passMove
@@ -195,43 +206,27 @@ func (g *Game) passCards(passDirection PassDirection) error {
 			recipient.Hand.Add(card) // and add it to the recipient's hand.
 		}
 		recipient.Hand.Sort()
-
-		e := EventPass{
-			FromID: passer.ID,
-			ToID:   recipient.ID,
-			Cards:  passMove.Cards,
-		}
-		g.EventLog.Add(e, []game.PlayerID{passer.ID, recipient.ID})
+		g.logPassMove(passer, recipient, passMove.Cards)
 	}
 
-	return nil
+	return nil, nil
+}
+
+func (g *Game) logPassMove(fromPlayer, toPlayer *Player, cards []card.Card) {
+	e := EventPass{
+		FromID: fromPlayer.ID,
+		ToID:   toPlayer.ID,
+		Cards:  cards,
+	}
+	g.EventLog.Add(e, []game.PlayerID{fromPlayer.ID, toPlayer.ID})
 }
 
 func (g *Game) isValidPass(h Hand, m PassMove) error {
-	if len(m.Cards) != 3 {
+	if err := h.IsValidPass(m.Cards); err != nil {
 		return InvalidPassError{
 			Move: m,
-			Msg:  "didn't get 3 pass cards",
+			Msg:  err.Error(),
 		}
-	}
-
-	// Make sure each card is actually in their hand
-	passCards := map[card.Card]bool{}
-	for _, passCard := range m.Cards {
-		if !h.Contains(passCard) {
-			return InvalidPassError{
-				Move: m,
-				Msg:  "passed card not in hand",
-			}
-		}
-
-		if passCards[passCard] {
-			return InvalidPassError{
-				Move: m,
-				Msg:  "duplicate pass card",
-			}
-		}
-		passCards[passCard] = true
 	}
 
 	return nil
@@ -259,7 +254,7 @@ func (g *Game) getPassRecipient(p *Player, passDirection PassDirection) *Player 
 	return g.players[(playerIndex+addon)%4]
 }
 
-func (g *Game) playRound() error {
+func (g *Game) playRound() (*Player, error) {
 	// To kick off the round, we need to know who has the two of clubs.
 	turn := -1
 
@@ -277,11 +272,12 @@ func (g *Game) playRound() error {
 	heartsBroken := false
 	tookPoints := map[*Player]bool{}
 	var err error
+	var dqPlayer *Player
 
 	for i := 0; i < 13; i++ {
-		turn, score, err = g.playTrick(turn, i, heartsBroken)
+		turn, score, dqPlayer, err = g.playTrick(turn, i, heartsBroken)
 		if err != nil {
-			return err
+			return dqPlayer, err
 		}
 
 		// We deduce whether a heart got played or not based on the score.
@@ -333,7 +329,7 @@ func (g *Game) playRound() error {
 	}
 	g.EventLog.AddAll(e)
 
-	return nil
+	return nil, nil
 }
 
 func (g *Game) getPlayersMap() map[game.PlayerID]int {
@@ -344,7 +340,7 @@ func (g *Game) getPlayersMap() map[game.PlayerID]int {
 	return m
 }
 
-func (g *Game) playTrick(turn int, trickCount int, heartsBroken bool) (int, int, error) {
+func (g *Game) playTrick(turn int, trickCount int, heartsBroken bool) (int, int, *Player, error) {
 	trick := []card.Card{}
 	plays := map[card.Card]game.PlayerID{}
 	turns := map[card.Card]int{}
@@ -354,12 +350,25 @@ func (g *Game) playTrick(turn int, trickCount int, heartsBroken bool) (int, int,
 		player := g.players[turn]
 		move, err := g.Comms.GetPlayMove(player, trick)
 		if err != nil {
-			return -1, -1, err
+			switch e := err.(type) {
+			case game.DQError:
+				return -1, -1, player, g.AddDQErrorID(&e, player.ID)
+			case *game.DQError:
+				return -1, -1, player, g.AddDQErrorID(e, player.ID)
+			}
+			return -1, -1, player, err
 		}
 
 		err = g.isValidPlay(player.Hand, move, trick, trickCount, heartsBroken)
 		if err != nil {
-			return -1, -1, err
+			// Make sure to log the bad play before we bomb out
+			g.logPlayMove(player, move.Card)
+
+			return -1, -1, player, game.DQError{
+				ID:   player.ID,
+				Type: game.DQTypeInvalidMove,
+				Msg:  err.Error(),
+			}
 		}
 
 		trick = append(trick, move.Card)
@@ -368,11 +377,7 @@ func (g *Game) playTrick(turn int, trickCount int, heartsBroken bool) (int, int,
 		turns[move.Card] = turn
 		turn = util.Increment(turn, 0, 3)
 
-		e := EventPlay{
-			ID:   player.ID,
-			Card: move.Card,
-		}
-		g.EventLog.AddAll(e)
+		g.logPlayMove(player, move.Card)
 	}
 
 	// Now see what the trick is worth and who gets it.
@@ -384,7 +389,15 @@ func (g *Game) playTrick(turn int, trickCount int, heartsBroken bool) (int, int,
 	}
 	g.EventLog.AddAll(e)
 
-	return turns[topCard], score, nil
+	return turns[topCard], score, nil, nil
+}
+
+func (g *Game) logPlayMove(player *Player, card card.Card) {
+	e := EventPlay{
+		ID:   player.ID,
+		Card: card,
+	}
+	g.EventLog.AddAll(e)
 }
 
 func (g *Game) isValidPlay(h Hand, m PlayMove, trick []card.Card, trickCount int, heartsBroken bool) error {
@@ -448,4 +461,24 @@ func (g *Game) gameOver() bool {
 	}
 
 	return false
+}
+
+func (g *Game) setLoser(p *Player) {
+	places := []game.Place{}
+
+	for _, player := range g.players {
+		rank := 1
+		if player == p {
+			// Last place
+			rank = 4
+		}
+
+		places = append(places, game.Place{
+			Player: player.Player,
+			Rank:   rank,
+			Score:  g.scores.Totals[player],
+		})
+	}
+
+	g.SetPlaces(places)
 }

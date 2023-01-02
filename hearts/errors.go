@@ -8,7 +8,7 @@ type InvalidPassError struct {
 }
 
 func (e InvalidPassError) Error() string {
-	return fmt.Sprintf("invalid pass: %s", e.Move)
+	return fmt.Sprintf("%s: %s", e.Msg, e.Move)
 }
 
 // Played a card not in their hand
