@@ -1,5 +1,7 @@
 package game
 
+import "sort"
+
 type Game struct {
 	Name
 	EventLog
@@ -34,6 +36,8 @@ func (g *Game) Places() []Place {
 }
 
 func (g *Game) SetPlaces(places []Place) {
+	// Let's ensure these are sorted here
+	sort.Slice(places, func(i, j int) bool { return places[i].Rank < places[j].Rank })
 	g.places = places
 }
 
