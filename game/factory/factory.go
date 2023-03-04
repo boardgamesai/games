@@ -9,6 +9,7 @@ import (
 	"github.com/boardgamesai/games/hearts"
 	"github.com/boardgamesai/games/reversi"
 	"github.com/boardgamesai/games/tictactoe"
+	"github.com/boardgamesai/games/ulttictactoe"
 )
 
 func New(gameName game.Name) (game.Playable, error) {
@@ -26,6 +27,8 @@ func New(gameName game.Name) (game.Playable, error) {
 		g = reversi.New()
 	case game.TicTacToe:
 		g = tictactoe.New()
+	case game.UltTicTacToe:
+		g = ulttictactoe.New()
 	default:
 		err = fmt.Errorf("unknown game: %s", gameName)
 	}

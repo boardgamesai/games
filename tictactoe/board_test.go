@@ -54,7 +54,7 @@ func TestIsValidMove(t *testing.T) {
 		}
 		err := board.IsValidMove(move)
 		if reflect.TypeOf(err) != reflect.TypeOf(test.expected) {
-			t.Errorf("SetValidation board: %s set: [%d, %d] expected: %s got: %s", test.boardStr, test.row, test.col, test.expected, err)
+			t.Errorf("IsValidMove board: %s set: [%d, %d] expected: %s got: %s", test.boardStr, test.row, test.col, test.expected, err)
 		}
 	}
 }

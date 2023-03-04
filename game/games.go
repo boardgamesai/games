@@ -3,11 +3,12 @@ package game
 type Name string
 
 const (
-	Amazons    = Name("amazons")
-	FourInARow = Name("fourinarow")
-	Hearts     = Name("hearts")
-	Reversi    = Name("reversi")
-	TicTacToe  = Name("tictactoe")
+	Amazons      = Name("amazons")
+	FourInARow   = Name("fourinarow")
+	Hearts       = Name("hearts")
+	Reversi      = Name("reversi")
+	TicTacToe    = Name("tictactoe")
+	UltTicTacToe = Name("ulttictactoe")
 )
 
 type MetaDataEntry struct {
@@ -33,6 +34,10 @@ var MetaData = map[Name]MetaDataEntry{
 		HasScore:   true,
 	},
 	TicTacToe: {
+		NumPlayers: 2,
+		HasScore:   false,
+	},
+	UltTicTacToe: {
 		NumPlayers: 2,
 		HasScore:   false,
 	},
