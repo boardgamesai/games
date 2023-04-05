@@ -15,8 +15,8 @@ func (g *Game) Reset() {
 	g.places = []Place{}
 }
 
-func (g *Game) MetaData() MetaDataEntry {
-	return MetaData[g.Name]
+func (g *Game) MetaData() MetaData {
+	return Data[g.Name]
 }
 
 func (g *Game) LoggedOutput(id PlayerID) string {
