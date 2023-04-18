@@ -36,7 +36,7 @@ func main() {
 		log.Fatalf("%s", err)
 	}
 
-	numPlayers := game.MetaData[gameName].NumPlayers
+	numPlayers := game.Data[gameName].NumPlayers
 	filenames := []string{}
 	if playRandom {
 		pwd, err := os.Getwd()
@@ -97,7 +97,7 @@ func playOneGame(g game.Playable, gameName game.Name, showRawEvents, printBoard 
 			tie = " (tie)"
 		}
 		fmt.Printf("%d.%s %s (ID: %d)", place.Rank, tie, place.Player.Name, place.Player.ID)
-		if game.MetaData[gameName].HasScore {
+		if game.Data[gameName].HasScore {
 			fmt.Printf(": %d", place.Score)
 		}
 		fmt.Println()
