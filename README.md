@@ -10,7 +10,7 @@ The main driver for using the games library is [play.go](https://github.com/boar
 
 ## General usage:
 ```
-go run play.go <game> path/to/ai1.go path/to/ai2.go ...
+go run play.go <game> path/to/ai_1.go path/to/ai_2.go ...
 ```
 
 ## Command-line options:
@@ -21,10 +21,13 @@ go run play.go <game> path/to/ai1.go path/to/ai2.go ...
 --print  : Print the final game board/state
 ```
 
-## Game List
-The available games are the `Name` constants at the top of [games.go](https://github.com/boardgamesai/games/blob/master/game/games.go).
-
-Each game has its own README explaining its rules / specifics. Example: [Tic-Tac-Toe](https://github.com/boardgamesai/games/tree/master/tictactoe)
+## Supported Games
+1. [Four-in-a-Row](fourinarow)
+1. [Game of the Amazons](amazons)
+1. [Hearts](hearts)
+1. [Reversi](reversi)
+1. [Tic-Tac-Toe](tictactoe)
+1. [Ultimate Tic-Tac-Toe](ulttictactoe)
 
 ## Requirements
 * [Go](https://go.dev) 1.19 or higher
