@@ -1,6 +1,6 @@
 # boardgamesai/games
 
-![Build Status](https://travis-ci.com/boardgamesai/games.svg?branch=master)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/boardgamesai/games/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/boardgamesai/games/tree/main)
 
 This is the games library that powers [boardgames.ai](https://boardgames.ai). It can be used to develop AIs locally, which can be uploaded to play other AIs.
 
