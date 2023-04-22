@@ -6,7 +6,7 @@ This is the games library that powers [boardgames.ai](https://boardgames.ai). It
 
 ---
 
-The main point of entry for this library is [play.go](https://github.com/boardgamesai/games/blob/master/play.go).
+The main point of entry for this library is [play.go](play.go).
 
 ## General usage:
 ```
