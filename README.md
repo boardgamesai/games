@@ -2,7 +2,7 @@
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/boardgamesai/games/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/boardgamesai/games/tree/main)
 
-This is the games library that powers [boardgames.ai](https://boardgames.ai). It can be used to develop AIs locally, which can be uploaded to play other AIs.
+This is the games library that powers [boardgames.ai](https://boardgames.ai). You can clone it to develop AIs locally, and then upload them to face off against other AIs.
 
 ---
 
@@ -51,7 +51,7 @@ go run play.go --random tictactoe
 4. Repeat steps 2-3
 ```
 
-## Guidelines
+## Constraints
 1. Your AI code cannot use the network or filesystem.
 1. If your AI causes a panic, it is disqualified and loses the match.
 1. If your AI commits an illegal move, it is disqualified and loses the match.
