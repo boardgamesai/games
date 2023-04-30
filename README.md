@@ -58,5 +58,9 @@ go run play.go --random tictactoe
 1. If your AI takes longer than 15 seconds to respond with a move, it is disqualified and loses the match.
 1. Your AI's code must fit in one `.go` file no larger than 1 MB.
 
+## Notes
+1. Turn order (if applicable) is always randomized
+1. A disqualification is treated as a loss, for ELO calculation purposes
+
 ## Feedback
-Bug reports / ideas / game suggestions welcome at ross@boardgames.ai.
+Comments / bug reports / ideas welcome at ross@boardgames.ai.
