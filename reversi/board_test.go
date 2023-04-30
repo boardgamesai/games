@@ -320,7 +320,7 @@ func trimBoard(s string) string {
 func boardsEqual(b1, b2 *Board) bool {
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
-			if b1.Grid[i][j] != b2.Grid[i][j] {
+			if b1[i][j] != b2[i][j] {
 				return false
 			}
 		}

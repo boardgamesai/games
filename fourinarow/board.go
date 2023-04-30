@@ -7,9 +7,7 @@ import (
 )
 
 // Board is 7 wide by 6 high with [0,0] in the lower left and [6,5] in the top right
-type Board struct {
-	Grid [7][6]int
-}
+type Board [7][6]int
 
 const Empty = 0
 
@@ -20,7 +18,7 @@ func (b *Board) IsValidMove(m Move) error {
 		}
 	}
 
-	if b.Grid[m.Col][5] != Empty {
+	if b[m.Col][5] != Empty {
 		return ColumnFullError{
 			Move: m,
 		}
@@ -38,8 +36,8 @@ func (b *Board) ApplyMove(order int, m Move) (int, error) {
 	}
 
 	for i := 0; i < 6; i++ {
-		if b.Grid[m.Col][i] == Empty {
-			b.Grid[m.Col][i] = order
+		if b[m.Col][i] == Empty {
+			b[m.Col][i] = order
 			row = i
 			break
 		}
@@ -61,7 +59,7 @@ func (b *Board) HasWinner() (bool, []Coords) {
 	// First check the columns
 	for i := 0; i <= 6; i++ {
 		for j := 0; j <= 2; j++ {
-			if isFourInARow(b.Grid[i][j], b.Grid[i][j+1], b.Grid[i][j+2], b.Grid[i][j+3]) {
+			if isFourInARow(b[i][j], b[i][j+1], b[i][j+2], b[i][j+3]) {
 				return true, coords(i, j, i, j+1, i, j+2, i, j+3)
 			}
 		}
@@ -70,7 +68,7 @@ func (b *Board) HasWinner() (bool, []Coords) {
 	// Next check the rows
 	for i := 0; i <= 5; i++ {
 		for j := 0; j <= 3; j++ {
-			if isFourInARow(b.Grid[j][i], b.Grid[j+1][i], b.Grid[j+2][i], b.Grid[j+3][i]) {
+			if isFourInARow(b[j][i], b[j+1][i], b[j+2][i], b[j+3][i]) {
 				return true, coords(j, i, j+1, i, j+2, i, j+3, i)
 			}
 		}
@@ -88,7 +86,7 @@ func (b *Board) HasWinner() (bool, []Coords) {
 	// First check the board on the left, the lower left start of each diagonal.
 	for i := 0; i <= 3; i++ {
 		for j := 0; j <= 2; j++ {
-			if isFourInARow(b.Grid[i][j], b.Grid[i+1][j+1], b.Grid[i+2][j+2], b.Grid[i+3][j+3]) {
+			if isFourInARow(b[i][j], b[i+1][j+1], b[i+2][j+2], b[i+3][j+3]) {
 				return true, coords(i, j, i+1, j+1, i+2, j+2, i+3, j+3)
 			}
 		}
@@ -96,7 +94,7 @@ func (b *Board) HasWinner() (bool, []Coords) {
 	// Now the board on the right, the lower right start of each diagonal.
 	for i := 3; i <= 6; i++ {
 		for j := 0; j <= 2; j++ {
-			if isFourInARow(b.Grid[i][j], b.Grid[i-1][j+1], b.Grid[i-2][j+2], b.Grid[i-3][j+3]) {
+			if isFourInARow(b[i][j], b[i-1][j+1], b[i-2][j+2], b[i-3][j+3]) {
 				return true, coords(i, j, i-1, j+1, i-2, j+2, i-3, j+3)
 			}
 		}
@@ -116,7 +114,7 @@ func (b *Board) IsFull() bool {
 func (b *Board) PossibleMoves() []Move {
 	moves := []Move{}
 	for i := 0; i < 7; i++ {
-		if b.Grid[i][5] == Empty {
+		if b[i][5] == Empty {
 			moves = append(moves, Move{i})
 		}
 	}
@@ -126,7 +124,7 @@ func (b *Board) PossibleMoves() []Move {
 
 func (b *Board) DeepCopy() *Board {
 	newBoard := Board{}
-	newBoard.Grid = b.Grid
+	newBoard = *b
 	return &newBoard
 }
 
@@ -135,7 +133,7 @@ func (b *Board) String() string {
 
 	for i := 5; i >= 0; i-- {
 		for j := 0; j <= 6; j++ {
-			str += fmt.Sprintf("%d", b.Grid[j][i])
+			str += fmt.Sprintf("%d", b[j][i])
 		}
 		str += "\n"
 	}
@@ -152,7 +150,7 @@ func GetStringFromBoard(b *Board) string {
 	for i := 5; i >= 0; i-- {
 		row := ""
 		for j := 0; j <= 6; j++ {
-			row += fmt.Sprintf("%d", b.Grid[j][i])
+			row += fmt.Sprintf("%d", b[j][i])
 		}
 		rows = append(rows, row)
 	}
@@ -166,7 +164,7 @@ func GetBoardFromString(s string) *Board {
 	for i, row := range strings.Split(s, "|") {
 		for j := 0; j <= 6; j++ {
 			cell, _ := strconv.Atoi(string(row[j]))
-			b.Grid[j][5-i] = cell
+			b[j][5-i] = cell
 		}
 	}
 

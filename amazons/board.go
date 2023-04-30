@@ -27,20 +27,18 @@ const (
 	Empty = SpaceType("")
 )
 
-type Board struct {
-	Grid [10][10]SpaceType
-}
+type Board [10][10]SpaceType
 
 func NewBoard() *Board {
 	b := Board{}
-	b.Grid[0][3] = White
-	b.Grid[3][0] = White
-	b.Grid[6][0] = White
-	b.Grid[9][3] = White
-	b.Grid[0][6] = Black
-	b.Grid[3][9] = Black
-	b.Grid[6][9] = Black
-	b.Grid[9][6] = Black
+	b[0][3] = White
+	b[3][0] = White
+	b[6][0] = White
+	b[9][3] = White
+	b[0][6] = Black
+	b[3][9] = Black
+	b[6][9] = Black
+	b[9][6] = Black
 	return &b
 }
 
@@ -51,7 +49,7 @@ func (b *Board) IsValidMove(s SpaceType, m Move) error {
 		}
 	}
 
-	if b.Grid[m.From.Col][m.From.Row] != s {
+	if b[m.From.Col][m.From.Row] != s {
 		return InvalidFromError{
 			Move: m,
 		}
@@ -78,9 +76,9 @@ func (b *Board) ApplyMove(s SpaceType, m Move) error {
 		return err
 	}
 
-	b.Grid[m.From.Col][m.From.Row] = Empty
-	b.Grid[m.To.Col][m.To.Row] = s
-	b.Grid[m.Arrow.Col][m.Arrow.Row] = Arrow
+	b[m.From.Col][m.From.Row] = Empty
+	b[m.To.Col][m.To.Row] = s
+	b[m.Arrow.Col][m.Arrow.Row] = Arrow
 	return nil
 }
 
@@ -93,7 +91,7 @@ func (b *Board) MovableQueens(st SpaceType) []Space {
 
 	for i := 0; i < 10; i++ {
 		for j := 0; j < 10; j++ {
-			if b.Grid[i][j] == st && len(b.queenMoves(i, j)) > 0 {
+			if b[i][j] == st && len(b.queenMoves(i, j)) > 0 {
 				spaces = append(spaces, Space{i, j})
 			}
 		}
@@ -109,14 +107,14 @@ func (b *Board) PossibleMoves(from Space) []Space {
 func (b *Board) PossibleArrows(from, to Space) []Space {
 	// Clone the board, apply the piece move, and get queen moves from there
 	b2 := b.DeepCopy()
-	b2.Grid[to.Col][to.Row] = b2.Grid[from.Col][from.Row]
-	b2.Grid[from.Col][from.Row] = Empty
+	b2[to.Col][to.Row] = b2[from.Col][from.Row]
+	b2[from.Col][from.Row] = Empty
 	return b2.queenMoves(to.Col, to.Row)
 }
 
 func (b *Board) DeepCopy() *Board {
 	newBoard := Board{}
-	newBoard.Grid = b.Grid
+	newBoard = *b
 	return &newBoard
 }
 
@@ -126,8 +124,8 @@ func (b *Board) String() string {
 	for i := 9; i >= 0; i-- {
 		for j := 0; j <= 9; j++ {
 			space := "."
-			if b.Grid[j][i] != Empty {
-				space = string(b.Grid[j][i])
+			if b[j][i] != Empty {
+				space = string(b[j][i])
 			}
 			str += space
 		}
@@ -173,7 +171,7 @@ func (b *Board) queenMoves(col, row int) []Space {
 
 			c += cInc
 			r += rInc
-			if offBoard(c, r) || b.Grid[c][r] != Empty {
+			if offBoard(c, r) || b[c][r] != Empty {
 				break
 			}
 			spaces = append(spaces, Space{c, r})
@@ -192,7 +190,7 @@ func GetBoardFromString(s string) *Board {
 			if space == "." {
 				space = ""
 			}
-			b.Grid[j][9-i] = SpaceType(space)
+			b[j][9-i] = SpaceType(space)
 		}
 	}
 
