@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
-	"reflect"
 )
 
 // Increment handles incrementing a value that wraps around
@@ -30,12 +29,10 @@ func RandInt(min, max int) int {
 // Shuffle random sorts a slice using the Fisher-Yates algorithm.
 // It panics if you pass it something other than a slice.
 // Code mostly copied from sort.Slice().
-func Shuffle(slice interface{}) {
-	rv := reflect.ValueOf(slice)
-	maxlen := rv.Len() - 1 // -1 because the last element can only be swapped with itself
-	swap := reflect.Swapper(slice)
-
+func Shuffle[T any](s []T) {
+	maxlen := len(s) - 1 // -1 because the last element can only be swapped with itself
 	for i := 0; i < maxlen; i++ {
-		swap(i, RandInt(i, maxlen))
+		j := RandInt(i, maxlen)
+		s[i], s[j] = s[j], s[i]
 	}
 }
