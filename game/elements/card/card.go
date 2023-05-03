@@ -1,7 +1,5 @@
 package card
 
-import "fmt"
-
 type Suit string
 
 const (
@@ -50,7 +48,7 @@ func init() {
 	}
 }
 
-func New(suit Suit, rank Rank) Card {
+func NewCard(suit Suit, rank Rank) Card {
 	return Card{
 		Suit: suit,
 		Rank: rank,
@@ -63,7 +61,7 @@ func (c Card) Index() int {
 }
 
 func (c Card) String() string {
-	return fmt.Sprintf("%s%s", c.Rank, c.Suit)
+	return string(c.Rank) + string(c.Suit)
 }
 
 // FromString takes input like "4C" or "JH" and returns a Card

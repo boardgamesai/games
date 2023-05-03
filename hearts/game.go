@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/boardgamesai/games/game"
-	"github.com/boardgamesai/games/hearts/card"
+	"github.com/boardgamesai/games/game/elements/card"
 	"github.com/boardgamesai/games/util"
 )
 
@@ -13,7 +13,7 @@ type Game struct {
 	game.Game
 	Comms   AIComms
 	players []*Player
-	deck    *Deck
+	deck    *card.Deck[card.Card]
 	scores  *Scores
 }
 
@@ -143,7 +143,7 @@ func (g *Game) Events() []fmt.Stringer {
 
 func (g *Game) reset() {
 	g.Game.Reset()
-	g.deck = NewDeck()
+	g.deck = card.NewStandardDeck()
 	g.scores = NewScores()
 	if g.Comms == nil {
 		g.Comms = NewComms(g)

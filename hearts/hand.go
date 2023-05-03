@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/boardgamesai/games/hearts/card"
+	"github.com/boardgamesai/games/game/elements/card"
 )
 
 type Hand []card.Card

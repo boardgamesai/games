@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/boardgamesai/games/game/elements/card"
 	"github.com/boardgamesai/games/hearts"
 	"github.com/boardgamesai/games/hearts/ai/driver"
-	"github.com/boardgamesai/games/hearts/card"
 	"github.com/boardgamesai/games/util"
 )
 

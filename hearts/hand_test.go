@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/boardgamesai/games/hearts/card"
+	"github.com/boardgamesai/games/game/elements/card"
 )
 
 func TestAddRemoveContains(t *testing.T) {

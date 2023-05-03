@@ -6,8 +6,8 @@ import (
 	"log"
 
 	"github.com/boardgamesai/games/game"
+	"github.com/boardgamesai/games/game/elements/card"
 	"github.com/boardgamesai/games/hearts"
-	"github.com/boardgamesai/games/hearts/card"
 )
 
 type Driver struct {

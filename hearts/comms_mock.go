@@ -1,6 +1,6 @@
 package hearts
 
-import "github.com/boardgamesai/games/hearts/card"
+import "github.com/boardgamesai/games/game/elements/card"
 
 type CommsMock struct {
 	hands map[int][]string // Assume that hands are set up in the order we want them played

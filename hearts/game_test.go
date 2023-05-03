@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/boardgamesai/games/game"
-	"github.com/boardgamesai/games/hearts/card"
+	"github.com/boardgamesai/games/game/elements/card"
 )
 
 func getGame(hands map[int][]string) *Game {

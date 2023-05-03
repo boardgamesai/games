@@ -1,6 +1,6 @@
 package hearts
 
-import "github.com/boardgamesai/games/hearts/card"
+import "github.com/boardgamesai/games/game/elements/card"
 
 type AIComms interface {
 	Setup(p *Player, players []*Player) error
