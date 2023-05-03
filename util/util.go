@@ -26,9 +26,7 @@ func RandInt(min, max int) int {
 	return int(randInt.Int64()) + min
 }
 
-// Shuffle random sorts a slice using the Fisher-Yates algorithm.
-// It panics if you pass it something other than a slice.
-// Code mostly copied from sort.Slice().
+// Random sort a slice using the Fisher-Yates algorithm.
 func Shuffle[T any](s []T) {
 	maxlen := len(s) - 1 // -1 because the last element can only be swapped with itself
 	for i := 0; i < maxlen; i++ {
