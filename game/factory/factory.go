@@ -7,6 +7,7 @@ import (
 	"github.com/boardgamesai/games/fourinarow"
 	"github.com/boardgamesai/games/game"
 	"github.com/boardgamesai/games/hearts"
+	"github.com/boardgamesai/games/liarsdice"
 	"github.com/boardgamesai/games/reversi"
 	"github.com/boardgamesai/games/tictactoe"
 	"github.com/boardgamesai/games/ulttictactoe"
@@ -21,6 +22,8 @@ func New(gameName game.Name) (game.Playable, error) {
 		g = amazons.New()
 	case game.FourInARow:
 		g = fourinarow.New()
+	case game.LiarsDice:
+		g = liarsdice.New()
 	case game.Hearts:
 		g = hearts.New()
 	case game.Reversi:

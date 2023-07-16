@@ -6,6 +6,7 @@ const (
 	Amazons      = Name("amazons")
 	FourInARow   = Name("fourinarow")
 	Hearts       = Name("hearts")
+	LiarsDice    = Name("liarsdice")
 	Reversi      = Name("reversi")
 	TicTacToe    = Name("tictactoe")
 	UltTicTacToe = Name("ulttictactoe")
@@ -64,6 +65,18 @@ var Data = map[Name]MetaData{
 		Links: Links{
 			Wikipedia:     "https://en.wikipedia.org/wiki/Hearts_(card_game)",
 			BoardGameGeek: "https://boardgamegeek.com/boardgame/6887/hearts",
+		},
+	},
+	LiarsDice: {
+		Name:        LiarsDice,
+		DisplayName: "Liar's Dice",
+		NumPlayers:  4,
+		HasScore:    false,
+		HasTies:     false,
+		Description: "A dice-rolling game where players bluff their way to be the last one standing.",
+		Links: Links{
+			Wikipedia:     "https://en.wikipedia.org/wiki/Liar%27s_dice",
+			BoardGameGeek: "https://boardgamegeek.com/boardgame/45/perudo",
 		},
 	},
 	Reversi: {
