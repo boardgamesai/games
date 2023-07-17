@@ -62,5 +62,5 @@ func (e EventChallenge) String() string {
 		s += fmt.Sprintf("%d:%d ", p, count)
 	}
 	s = strings.TrimSpace(s)
-	return fmt.Sprintf("ID %d challenge actual: %d dice lost: %s", e.ID, e.ActualQuantity, s)
+	return fmt.Sprintf("ID %d challenge actual: %d dice change: %s", e.ID, e.ActualQuantity, s)
 }

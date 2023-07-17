@@ -45,24 +45,16 @@ func (ai *AI) GetMove(state driver.State) liarsdice.Move {
 			}
 		}
 
-		if n < 3 && len(state.Dice) > 1 { // Must have 2+ dice to show any
-			for _, d := range state.Dice {
-				if d == m.Bid || d == liarsdice.Star {
-					m.ShowDice = append(m.ShowDice, d)
-				}
-			}
+		if n < 3 {
+			m.ShowDice = getShowDice(m.Bid, &state)
 		}
 	} else if n < 9 {
 		// Increase the quantity
 		m.Bid = state.Bid
 		m.Quantity = state.Quantity + 1
 
-		if n < 7 && len(state.Dice) > 1 { // Must have 2+ dice to show any
-			for _, d := range state.Dice {
-				if d == m.Bid || d == liarsdice.Star {
-					m.ShowDice = append(m.ShowDice, d)
-				}
-			}
+		if n < 7 {
+			m.ShowDice = getShowDice(m.Bid, &state)
 		}
 	} else {
 		// Challenge
@@ -79,4 +71,25 @@ func (ai *AI) GetMove(state driver.State) liarsdice.Move {
 	}
 
 	return m
+}
+
+func getShowDice(bid liarsdice.DiceVal, state *driver.State) []liarsdice.DiceVal {
+	showDice := []liarsdice.DiceVal{}
+
+	if len(state.Dice) == 1 {
+		// Can't show dice if you only have one
+		return showDice
+	}
+
+	for _, d := range state.Dice {
+		if d == bid || d == liarsdice.Star {
+			showDice = append(showDice, d)
+		}
+	}
+	if len(showDice) == len(state.Dice) {
+		// We had 2+ dice but tried to show them all, drop the last one
+		showDice = showDice[:len(showDice)-1]
+	}
+
+	return showDice
 }
