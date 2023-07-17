@@ -70,5 +70,15 @@ func (d *Dice[D]) Count() int {
 }
 
 func (d *Dice[D]) String() string {
-	return fmt.Sprintf("%s", d.Values)
+	val := d.dieValues[0]
+	format := ""
+	if _, ok := interface{}(val).(fmt.Stringer); ok {
+		// Our type implements Stringer, so call it
+		format = "%s"
+	} else {
+		// No Stringer, assume we're a basic int
+		format = "%d"
+	}
+
+	return fmt.Sprintf(format, d.Values)
 }
