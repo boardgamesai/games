@@ -45,7 +45,7 @@ func (ai *AI) GetMove(state driver.State) liarsdice.Move {
 			}
 		}
 
-		if n < 3 {
+		if n < 3 && len(state.Dice) > 1 { // Must have 2+ dice to show any
 			for _, d := range state.Dice {
 				if d == m.Bid {
 					m.ShowDice = append(m.ShowDice, d)
@@ -57,7 +57,7 @@ func (ai *AI) GetMove(state driver.State) liarsdice.Move {
 		m.Bid = state.Bid
 		m.Quantity = state.Quantity + 1
 
-		if n < 7 {
+		if n < 7 && len(state.Dice) > 1 { // Must have 2+ dice to show any
 			for _, d := range state.Dice {
 				if d == m.Bid {
 					m.ShowDice = append(m.ShowDice, d)
