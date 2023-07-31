@@ -51,6 +51,7 @@ func (e EventMove) String() string {
 
 type EventChallenge struct {
 	ID             game.PlayerID
+	Bid            DiceVal
 	ActualQuantity int
 	DiceChange     map[game.PlayerID]int
 	Eliminated     game.PlayerID `json:",omitempty"`

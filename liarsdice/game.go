@@ -127,6 +127,7 @@ func (g *Game) Play() error {
 			}
 			e := EventChallenge{
 				ID:             player.ID,
+				Bid:            g.board.Outcome.Bid,
 				ActualQuantity: g.board.Outcome.ActualQuantity,
 				DiceChange:     changes,
 			}
@@ -171,7 +172,8 @@ func (g *Game) Play() error {
 }
 
 func (g *Game) sendRollEvents() {
-	for p, d := range g.board.DiceHidden {
+	for _, p := range g.players {
+		d := g.board.DiceHidden[p]
 		if d.Count() > 0 {
 			e := EventRoll{
 				ID:   p.ID,

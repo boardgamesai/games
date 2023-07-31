@@ -7,6 +7,7 @@ import (
 )
 
 type ChallengeOutcome struct {
+	Bid            DiceVal
 	ActualQuantity int
 	DiceChanges    map[*Player]int
 }
@@ -181,6 +182,7 @@ func (b *Board) applyChallengeMove(p *Player) {
 
 	// Store our outcome
 	b.Outcome = &ChallengeOutcome{
+		Bid:            b.Bid,
 		ActualQuantity: actual,
 		DiceChanges:    diceChanges,
 	}
