@@ -25,6 +25,7 @@ go run play.go <game> path/to/ai_1.go path/to/ai_2.go ...
 1. [Four-in-a-Row](fourinarow)
 1. [Game of the Amazons](amazons)
 1. [Hearts](hearts)
+1. [Liar's Dice](liarsdice)
 1. [Reversi](reversi)
 1. [Tic-Tac-Toe](tictactoe)
 1. [Ultimate Tic-Tac-Toe](ulttictactoe)
