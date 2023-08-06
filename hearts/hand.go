@@ -27,8 +27,8 @@ func (h *Hand) Remove(c card.Card) bool {
 	return false
 }
 
-func (h Hand) Contains(c card.Card) bool {
-	for _, card := range h {
+func (h *Hand) Contains(c card.Card) bool {
+	for _, card := range *h {
 		if card == c {
 			return true
 		}
@@ -37,11 +37,11 @@ func (h Hand) Contains(c card.Card) bool {
 	return false
 }
 
-func (h Hand) Sort() {
-	sort.Slice(h, func(i, j int) bool { return h[i].Index() < h[j].Index() })
+func (h *Hand) Sort() {
+	sort.Slice(*h, func(i, j int) bool { return (*h)[i].Index() < (*h)[j].Index() })
 }
 
-func (h Hand) IsValidPass(cards []card.Card) error {
+func (h *Hand) IsValidPass(cards []card.Card) error {
 	if len(cards) != 3 {
 		return errors.New("didn't get 3 pass cards")
 	}
@@ -62,10 +62,10 @@ func (h Hand) IsValidPass(cards []card.Card) error {
 	return nil
 }
 
-func (h Hand) PossiblePlays(trick []card.Card, trickCount int, heartsBroken bool) []card.Card {
+func (h *Hand) PossiblePlays(trick []card.Card, trickCount int, heartsBroken bool) []card.Card {
 	plays := []card.Card{}
 
-	for _, c := range h {
+	for _, c := range *h {
 		// If they have the two of clubs and this is the first trick, ignore all else, they must play this.
 		if trickCount == 0 && c.Rank == card.Two && c.Suit == card.Clubs {
 			return []card.Card{c}
@@ -88,7 +88,7 @@ func (h Hand) PossiblePlays(trick []card.Card, trickCount int, heartsBroken bool
 	// If we get here with empty plays, that means someone led with a suit we don't have.
 	// We're free to play any card in our hand, unless it's the first trick, then no hearts/queen of spades.
 	if len(plays) == 0 {
-		for _, c := range h {
+		for _, c := range *h {
 			if trickCount == 0 && (c.Suit == card.Hearts || (c.Rank == card.Queen && c.Suit == card.Spades)) {
 				continue
 			}
@@ -99,7 +99,7 @@ func (h Hand) PossiblePlays(trick []card.Card, trickCount int, heartsBroken bool
 	// Tbis is to handle the EXTREMELY unlikely case where it's the first trick and we were dealt only
 	// hearts/queen of spades. In this case they can play anything.
 	if len(plays) == 0 {
-		plays = h
+		plays = *h
 	}
 
 	return plays

@@ -12,7 +12,8 @@ type State struct {
 	Trick        []card.Card
 	TrickCount   int
 	HeartsBroken bool
-	RoundScores  map[*hearts.Player]int
+	CurrentRound map[game.PlayerID]int
+	*hearts.Scores
 	hearts.Hand
 	hearts.PassDirection
 	game.State

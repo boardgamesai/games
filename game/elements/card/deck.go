@@ -22,6 +22,11 @@ type Deck[C Cardable] struct {
 	current int
 }
 
+// Convenience type for the common 52-card deck
+type StandardDeck struct {
+	*Deck[Card]
+}
+
 func NewDeck[C Cardable](cards []C) *Deck[C] {
 	deck := Deck[C]{
 		cards: cards,
@@ -30,7 +35,7 @@ func NewDeck[C Cardable](cards []C) *Deck[C] {
 	return &deck
 }
 
-func NewStandardDeck() *Deck[Card] {
+func NewStandardDeck() StandardDeck {
 	cards := make([]Card, 52)
 
 	i := 0
@@ -41,7 +46,10 @@ func NewStandardDeck() *Deck[Card] {
 		}
 	}
 
-	return NewDeck(cards)
+	d := StandardDeck{
+		Deck: NewDeck(cards),
+	}
+	return d
 }
 
 func (d *Deck[C]) Shuffle() {

@@ -11,14 +11,19 @@ import (
 
 func getGame(hands map[int][]string) *Game {
 	g := New()
+	allhands := map[*Player]*Hand{}
 
 	for i := 0; i < g.MetaData().NumPlayers; i++ {
 		g.players[i].Player.ID = game.PlayerID(i + 1)
 		g.players[i].Position = i + 1
 		g.players[i].Player.Name = fmt.Sprintf("player%d", i+1)
 		g.players[i].Player.Runnable = &game.RunnablePlayerMock{}
-		g.players[i].Hand = getHand(hands[i+1])
+		allhands[g.players[i]] = getHand(hands[i+1])
 	}
+
+	board := NewBoard(g.players)
+	board.Hands = allhands
+	g.board = board
 
 	g.Comms = &CommsMock{
 		hands: hands,
@@ -27,12 +32,12 @@ func getGame(hands map[int][]string) *Game {
 	return g
 }
 
-func getHand(cards []string) Hand {
+func getHand(cards []string) *Hand {
 	hand := Hand{}
 	for _, c := range cards {
 		hand.Add(card.FromString(c))
 	}
-	return hand
+	return &hand
 }
 
 func TestPassCards(t *testing.T) {
@@ -98,9 +103,9 @@ func TestPassCards(t *testing.T) {
 
 		for _, player := range g.players {
 			h := getHand(test.expectedHands[player.Position])
-			for i := 1; i < len(player.Hand); i++ {
-				if player.Hand[i] != h[i] {
-					t.Errorf("expected hand: %s got: %s for player %s", h, player.Hand, player)
+			for i := 1; i < len(*g.board.Hands[player]); i++ {
+				if (*g.board.Hands[player])[i] != (*h)[i] {
+					t.Errorf("expected hand: %s got: %s for player %s", h, g.board.Hands[player], player)
 					break
 				}
 			}
@@ -137,7 +142,7 @@ func TestIsValidPlay(t *testing.T) {
 			Card: card.FromString(test.play),
 		}
 		hand := getHand([]string{"KS", "4D", "7C", "TH", "JH", "QH", "KH"})
-		err := g.isValidPlay(hand, move, getCards(test.trick), 6, false)
+		err := g.isValidPlay(*hand, move, getCards(test.trick), 6, false)
 		if reflect.TypeOf(err) != reflect.TypeOf(test.expected) {
 			t.Errorf("expected err: %s got: %s", test.expected, err)
 		}
@@ -187,7 +192,7 @@ func TestPlayRound(t *testing.T) {
 		}
 
 		for i, score := range test.expectedScores {
-			actualScore := g.scores.Totals[g.players[i]]
+			actualScore := g.board.Scores.Totals[g.players[i]]
 			if actualScore != score {
 				t.Errorf("Got score %d, expected %d", actualScore, score)
 			}

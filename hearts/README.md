@@ -21,7 +21,8 @@ Your AI must implement the [`heartsAI`](ai/driver/hearts_ai.go) interface. It wi
 * `Trick` - the cards played thus far on the current trick
 * `TrickCount` - the number of tricks played thus far in the current round, from 0-12
 * `HeartsBroken` - indicates whether hearts have already been broken in this round
-* `RoundScores` - scoring history per round
+* `CurrentRound` - scores for the current round in progress
+* `Scores` - scoring history per round, only gets written after a round is over
 * `Hand` - your hand, cards are removed as they are played
 * `PassDirection` - direction of passing in the current round, of type [`PassDirection`](passdirection.go)
 

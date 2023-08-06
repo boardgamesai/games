@@ -61,9 +61,8 @@ func (d *Driver) handleSetup(message []byte) ([]byte, error) {
 		return []byte{}, fmt.Errorf("JSON decode failed: %s err: %s", message, err)
 	}
 
-	d.state.ID = setupMessage.ID
-	d.state.Position = setupMessage.Position
-	d.state.Players = []hearts.Player{}
+	d.state = d.initState(setupMessage)
+
 	return d.OkJSON(), nil
 }
 
@@ -74,12 +73,11 @@ func (d *Driver) handlePass(message []byte) ([]byte, error) {
 		return []byte{}, fmt.Errorf("JSON decode failed: %s err: %s", message, err)
 	}
 
-	err = d.checkForDealPass(passMessage.NewEvents)
+	err = d.processNewEvents(passMessage.NewEvents)
 	if err != nil {
 		return []byte{}, err
 	}
 
-	d.state.AddEvents(passMessage.NewEvents)
 	d.state.PassDirection = passMessage.Direction
 
 	// Remove these cards from their hand right away
@@ -103,12 +101,11 @@ func (d *Driver) handlePlay(message []byte) ([]byte, error) {
 		return []byte{}, fmt.Errorf("JSON decode failed: %s err: %s", message, err)
 	}
 
-	err = d.checkForDealPass(playMessage.NewEvents)
+	err = d.processNewEvents(playMessage.NewEvents)
 	if err != nil {
 		return []byte{}, err
 	}
 
-	d.state.AddEvents(playMessage.NewEvents)
 	d.state.Trick = playMessage.Trick
 	for _, c := range d.state.Trick {
 		if c.Suit == card.Hearts {
@@ -131,9 +128,11 @@ func (d *Driver) handlePlay(message []byte) ([]byte, error) {
 	return moveJSON, nil
 }
 
-func (d *Driver) checkForDealPass(events []game.Event) error {
+func (d *Driver) processNewEvents(events []game.Event) error {
 	for _, e := range events {
 
+		// Note - we don't have to process EventTypePlay - everything we need for state will be set up
+		// when we get the move message
 		switch e.Type {
 		case hearts.EventTypeDeal:
 			dealEvent := hearts.EventDeal{}
@@ -142,11 +141,9 @@ func (d *Driver) checkForDealPass(events []game.Event) error {
 				return err
 			}
 
-			// If we got a hand, we know its ours (we don't get hands for other players) and we reset
+			// If we got a hand, we know its ours (we don't get hands for other players)
 			d.state.Hand = dealEvent.Hand
-			d.state.Trick = []card.Card{}
-			d.state.TrickCount = 0
-			d.state.HeartsBroken = false
+
 		case hearts.EventTypePass:
 			passEvent := hearts.EventPass{}
 			err := json.Unmarshal(e.Data, &passEvent)
@@ -162,8 +159,64 @@ func (d *Driver) checkForDealPass(events []game.Event) error {
 				d.state.Hand.Add(c)
 			}
 			d.state.Hand.Sort()
+
+		case hearts.EventTypeScoreTrick:
+			scoreEvent := hearts.EventScoreTrick{}
+			err := json.Unmarshal(e.Data, &scoreEvent)
+			if err != nil {
+				return err
+			}
+
+			d.state.CurrentRound[scoreEvent.ID] += scoreEvent.Score
+
+		case hearts.EventTypeScoreRound:
+			scoreRoundEvent := hearts.EventScoreRound{}
+			err := json.Unmarshal(e.Data, &scoreRoundEvent)
+			if err != nil {
+				return err
+			}
+
+			// Have to translate the player IDs to pointers
+			round := map[*hearts.Player]int{}
+			for playerID, score := range scoreRoundEvent.RoundScores {
+				for _, player := range d.state.Players {
+					if player.ID == playerID {
+						round[&player] = score
+						break
+					}
+				}
+			}
+
+			d.state.Scores.AddRound(round)
+
+			// Reset the current round
+			d.state.CurrentRound = map[game.PlayerID]int{}
+			d.state.Trick = []card.Card{}
+			d.state.TrickCount = 0
+			d.state.HeartsBroken = false
 		}
 	}
 
+	d.state.AddEvents(events)
+
 	return nil
+}
+
+func (d *Driver) initState(message hearts.MessageSetup) *State {
+	players := []hearts.Player{}
+	for _, p := range message.Players {
+		players = append(players, *p)
+	}
+
+	return &State{
+		State: game.State{
+			ID: message.ID,
+		},
+		Position:     message.Position,
+		Players:      players,
+		Trick:        []card.Card{},
+		Scores:       hearts.NewScores(),
+		Hand:         hearts.Hand{},
+		CurrentRound: map[game.PlayerID]int{},
+	}
 }
