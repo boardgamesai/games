@@ -59,7 +59,7 @@ func (p *RunnablePlayer) Run() error {
 	select {
 	case response := <-p.responseChan:
 		if string(response) != "OK" {
-			err = fmt.Errorf("Got non-OK response when launching player: %s stderr: %s", response, p.Stderr())
+			err = fmt.Errorf("got non-OK response when launching player: %s stderr: %s", response, p.Stderr())
 		}
 	case <-time.After(time.Second * PlayerLaunchTimeout):
 		err = DQError{
@@ -108,7 +108,7 @@ func (p *RunnablePlayer) SendMessage(message interface{}) ([]byte, error) {
 	// Let's use reflection to get the type of this message
 	messageType := reflect.TypeOf(message).Name()
 	if messageType[0:7] != "Message" {
-		return []byte{}, fmt.Errorf("Invalid type %s passed to SendMessage", messageType)
+		return []byte{}, fmt.Errorf("invalid type %s passed to SendMessage", messageType)
 	}
 
 	// Hack off the "Message" on the front and lowercase it
@@ -169,7 +169,7 @@ func (p *RunnablePlayer) SendMessageNoResponse(message interface{}) error {
 		return err
 	}
 	if string(response) != "\"OK\"" { // Hack - this is JSON-encoded
-		return fmt.Errorf("Got non-OK response: %s stderr: %s", response, p.Stderr())
+		return fmt.Errorf("got non-OK response: %s stderr: %s", response, p.Stderr())
 	}
 
 	return nil
@@ -203,7 +203,7 @@ func (p *RunnablePlayer) setupFiles() error {
 	// First create the tmp dir for the player
 	tmpDir := config.TmpDir + "/" + uuid.NewRandom().String()
 	if err := os.Mkdir(tmpDir, 0700); err != nil {
-		return fmt.Errorf("Could not create tmp dir: %s for player: %s err: %s", tmpDir, p.filePath, err)
+		return fmt.Errorf("could not create tmp dir: %s for player: %s err: %s", tmpDir, p.filePath, err)
 	}
 	p.runDir = tmpDir
 
@@ -215,14 +215,14 @@ func (p *RunnablePlayer) setupFiles() error {
 	destPath := tmpDir + "/main.go"
 	err = p.copyFile(srcPath, destPath)
 	if err != nil {
-		return fmt.Errorf("Could not copy %s to %s", srcPath, destPath)
+		return fmt.Errorf("could not copy %s to %s", srcPath, destPath)
 	}
 
 	// Now copy over the AI-specific file
 	aiDestPath := tmpDir + "/ai.go"
 	err = p.copyFile(aiSrcPath, aiDestPath)
 	if err != nil {
-		return fmt.Errorf("Could not copy %s to %s", aiSrcPath, aiDestPath)
+		return fmt.Errorf("could not copy %s to %s", aiSrcPath, aiDestPath)
 	}
 
 	return nil
@@ -234,7 +234,7 @@ func (p *RunnablePlayer) driverFilePath() (string, error) {
 	_, err := os.Stat(path)
 	if err == nil {
 		return path, nil
-	} else if err != nil && !os.IsNotExist(err) {
+	} else if !os.IsNotExist(err) {
 		return "", err
 	}
 

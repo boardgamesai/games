@@ -14,7 +14,7 @@ type EventLog []Event
 func (el *EventLog) Add(event interface{}, playerIDs []PlayerID) error {
 	eventType := reflect.TypeOf(event).Name()
 	if eventType[0:5] != "Event" {
-		return fmt.Errorf("Invalid type %s passed to AddEvent", eventType)
+		return fmt.Errorf("invalid type %s passed to AddEvent", eventType)
 	}
 	eventType = strings.ToLower(eventType[5:])
 
