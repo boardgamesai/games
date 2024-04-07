@@ -17,3 +17,7 @@ func (p *Player) String() string {
 
 	return fmt.Sprintf("%s (%d)", p.Name, p.ID)
 }
+
+type PlayerBaseable interface {
+	BasePlayer() *Player
+}

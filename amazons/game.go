@@ -9,25 +9,15 @@ import (
 )
 
 type Game struct {
-	game.Game
-	Comms   AIComms
-	players []*Player
-	board   *Board
+	game.Game[*Player]
+	Comms AIComms
+	board *Board
 }
 
 func New() *Game {
-	g := Game{
-		players: []*Player{},
-	}
+	g := Game{}
 	g.Name = game.Amazons
-
-	for i := 0; i < g.MetaData().NumPlayers; i++ {
-		p := Player{
-			Player: game.Player{},
-		}
-		g.players = append(g.players, &p)
-	}
-	g.reset()
+	g.InitPlayers(NewPlayer)
 	return &g
 }
 
@@ -44,7 +34,7 @@ func (g *Game) Play() error {
 	}
 
 	// Launch the player processes
-	for _, player := range g.players {
+	for _, player := range g.Players {
 		defer player.CleanUp()
 		defer g.SetOutput(player.ID, player)
 
@@ -74,7 +64,7 @@ func (g *Game) Play() error {
 	// Game is over when someone can't move - a draw is impossible
 	playerTurn := 0
 	for {
-		player := g.players[playerTurn]
+		player := g.Players[playerTurn]
 		if !g.board.CanMove(player.Color) {
 			break // Someone can't move, game over
 		}
@@ -114,17 +104,9 @@ func (g *Game) Play() error {
 	}
 
 	// Whoever's turn it is when we get here is the loser
-	g.setWinner(g.otherPlayer(g.players[playerTurn]))
+	g.setWinner(g.otherPlayer(g.Players[playerTurn]))
 
 	return nil
-}
-
-func (g *Game) Players() []*game.Player {
-	players := []*game.Player{}
-	for _, p := range g.players {
-		players = append(players, &(p.Player))
-	}
-	return players
 }
 
 func (g *Game) Events() []fmt.Stringer {
@@ -167,20 +149,20 @@ func (g *Game) setWinner(p *Player) {
 }
 
 func (g *Game) shufflePlayers() {
-	util.Shuffle(g.players)
+	util.Shuffle(g.Players)
 
 	colors := []SpaceType{White, Black}
 	for i := 0; i < 2; i++ {
-		g.players[i].Order = i + 1
-		g.players[i].Color = colors[i]
+		g.Players[i].Order = i + 1
+		g.Players[i].Color = colors[i]
 	}
 }
 
 func (g *Game) otherPlayer(player *Player) *Player {
-	if g.players[0] == player {
-		return g.players[1]
+	if g.Players[0] == player {
+		return g.Players[1]
 	}
-	return g.players[0]
+	return g.Players[0]
 }
 
 func (g *Game) String() string {

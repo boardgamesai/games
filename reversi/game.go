@@ -9,26 +9,15 @@ import (
 )
 
 type Game struct {
-	game.Game
-	Comms   AIComms
-	players []*Player
-	board   *Board
+	game.Game[*Player]
+	Comms AIComms
+	board *Board
 }
 
 func New() *Game {
-	g := Game{
-		players: []*Player{},
-	}
+	g := Game{}
 	g.Name = game.Reversi
-
-	for i := 0; i < g.MetaData().NumPlayers; i++ {
-		p := Player{
-			Player: game.Player{},
-		}
-		g.players = append(g.players, &p)
-	}
-
-	g.reset()
+	g.InitPlayers(NewPlayer)
 	return &g
 }
 
@@ -45,7 +34,7 @@ func (g *Game) Play() error {
 	}
 
 	// Launch the player processes
-	for _, player := range g.players {
+	for _, player := range g.Players {
 		defer player.CleanUp()
 		defer g.SetOutput(player.ID, player)
 
@@ -75,7 +64,7 @@ func (g *Game) Play() error {
 	// Game is over when board is filled or no one has moves left
 	playerTurn := 0
 	for !g.board.IsFull() {
-		player := g.players[playerTurn]
+		player := g.Players[playerTurn]
 		move, err := g.Comms.GetMove(player)
 		if err != nil {
 			g.setWinner(g.otherPlayer(player))
@@ -110,10 +99,10 @@ func (g *Game) Play() error {
 		}
 
 		playerTurn = util.Increment(playerTurn, 0, 1)
-		if len(g.board.PossibleMoves(g.players[playerTurn].Disc)) == 0 {
+		if len(g.board.PossibleMoves(g.Players[playerTurn].Disc)) == 0 {
 			// No moves left for this player, skip them
 			playerTurn = util.Increment(playerTurn, 0, 1)
-			if len(g.board.PossibleMoves(g.players[playerTurn].Disc)) == 0 {
+			if len(g.board.PossibleMoves(g.Players[playerTurn].Disc)) == 0 {
 				// No moves left for this player either! Game is over.
 				break
 			}
@@ -130,14 +119,6 @@ func (g *Game) Play() error {
 	g.setWinner(winner)
 
 	return nil
-}
-
-func (g *Game) Players() []*game.Player {
-	players := []*game.Player{}
-	for _, p := range g.players {
-		players = append(players, &(p.Player))
-	}
-	return players
 }
 
 func (g *Game) Events() []fmt.Stringer {
@@ -176,8 +157,8 @@ func (g *Game) setWinner(p *Player) {
 	scores := g.board.Score()
 
 	if p == nil {
-		player1 := g.players[0]
-		player2 := g.players[1]
+		player1 := g.Players[0]
+		player2 := g.Players[1]
 		places = []game.Place{
 			{Player: player1.Player, Rank: 1, Tie: true, Score: scores[player1.Disc]},
 			{Player: player2.Player, Rank: 1, Tie: true, Score: scores[player2.Disc]},
@@ -194,24 +175,24 @@ func (g *Game) setWinner(p *Player) {
 }
 
 func (g *Game) shufflePlayers() {
-	util.Shuffle(g.players)
+	util.Shuffle(g.Players)
 
 	discs := []Disc{Black, White}
 	for i := 0; i < 2; i++ {
-		g.players[i].Order = i + 1
-		g.players[i].Disc = discs[i]
+		g.Players[i].Order = i + 1
+		g.Players[i].Disc = discs[i]
 	}
 }
 
 func (g *Game) otherPlayer(player *Player) *Player {
-	if g.players[0] == player {
-		return g.players[1]
+	if g.Players[0] == player {
+		return g.Players[1]
 	}
-	return g.players[0]
+	return g.Players[0]
 }
 
 func (g *Game) playerDisc(d Disc) *Player {
-	for _, p := range g.players {
+	for _, p := range g.Players {
 		if p.Disc == d {
 			return p
 		}

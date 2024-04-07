@@ -55,7 +55,7 @@ func main() {
 		filenames = args[1:]
 	}
 
-	players := g.Players()
+	players := g.GetPlayers()
 	for i, filename := range filenames {
 		players[i].ID = game.PlayerID(i + 1)
 		players[i].Name = game.FileNameToPlayerName(filename)
@@ -73,7 +73,7 @@ func playOneGame(g game.Playable, gameName game.Name, showRawEvents, printBoard 
 	gameErr := g.Play()
 
 	fmt.Printf("Ordered players:\n")
-	for _, player := range g.Players() {
+	for _, player := range g.GetPlayers() {
 		fmt.Printf("* %s (ID: %d)\n", player.Name, player.ID)
 	}
 
@@ -117,8 +117,8 @@ func playOneGame(g game.Playable, gameName game.Name, showRawEvents, printBoard 
 func playMultipleGames(g game.Playable, numGames int) {
 	// Grab a copy of the game's players in the original order. The game will shuffle them,
 	// but we want to know the original order for reporting purposes.
-	players := make([]*game.Player, len(g.Players()))
-	copy(players, g.Players())
+	players := make([]*game.Player, len(g.GetPlayers()))
+	copy(players, g.GetPlayers())
 
 	outcomes := map[game.PlayerID]map[int]int{}
 	for _, player := range players {
@@ -157,7 +157,7 @@ func usageNoGame() string {
 }
 
 func printLoggedOutput(g game.Playable) {
-	for _, player := range g.Players() {
+	for _, player := range g.GetPlayers() {
 		loggedOutput := g.LoggedOutput(player.ID)
 		if loggedOutput != "" {
 			fmt.Printf("Player %d logged output:\n", player.ID)

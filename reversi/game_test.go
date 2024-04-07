@@ -9,11 +9,10 @@ import (
 
 func getGame(moves map[int][]Move) *Game {
 	g := New()
-	players := g.Players()
 	for i := 0; i < g.MetaData().NumPlayers; i++ {
-		players[i].ID = game.PlayerID(i + 1)
-		players[i].Name = fmt.Sprintf("player%d", i)
-		players[i].Runnable = &game.RunnablePlayerMock{}
+		g.Players[i].ID = game.PlayerID(i + 1)
+		g.Players[i].Name = fmt.Sprintf("player%d", i)
+		g.Players[i].Runnable = &game.RunnablePlayerMock{}
 	}
 	g.Comms = &CommsMock{
 		moves: moves,
@@ -103,11 +102,11 @@ func TestSkipTurnGame(t *testing.T) {
 	}
 
 	places := g.Places()
-	if places[0].Player.ID != g.players[1].ID || places[0].Rank != 1 || places[0].Score != 48 {
+	if places[0].Player.ID != g.Players[1].ID || places[0].Rank != 1 || places[0].Score != 48 {
 		t.Errorf("Got incorrect places, first player: %+v", places)
 	}
 
-	if places[1].Player.ID != g.players[0].ID || places[1].Rank != 2 || places[1].Score != 16 {
+	if places[1].Player.ID != g.Players[0].ID || places[1].Rank != 2 || places[1].Score != 16 {
 		t.Errorf("Got incorrect places, second player: %+v", places)
 	}
 }
@@ -136,11 +135,11 @@ func TestGameEndsEarlyWipeout(t *testing.T) {
 	}
 
 	places := g.Places()
-	if places[0].Player.ID != g.players[0].ID || places[0].Rank != 1 || places[0].Score != 13 {
+	if places[0].Player.ID != g.Players[0].ID || places[0].Rank != 1 || places[0].Score != 13 {
 		t.Errorf("Got incorrect places, first player: %+v", places)
 	}
 
-	if places[1].Player.ID != g.players[1].ID || places[1].Rank != 2 || places[1].Score != 0 {
+	if places[1].Player.ID != g.Players[1].ID || places[1].Rank != 2 || places[1].Score != 0 {
 		t.Errorf("Got incorrect places, second player: %+v", places)
 	}
 }

@@ -14,14 +14,14 @@ func getGame(hands map[int][]string) *Game {
 	allhands := map[*Player]*Hand{}
 
 	for i := 0; i < g.MetaData().NumPlayers; i++ {
-		g.players[i].Player.ID = game.PlayerID(i + 1)
-		g.players[i].Position = i + 1
-		g.players[i].Player.Name = fmt.Sprintf("player%d", i+1)
-		g.players[i].Player.Runnable = &game.RunnablePlayerMock{}
-		allhands[g.players[i]] = getHand(hands[i+1])
+		g.Players[i].Player.ID = game.PlayerID(i + 1)
+		g.Players[i].Position = i + 1
+		g.Players[i].Player.Name = fmt.Sprintf("player%d", i+1)
+		g.Players[i].Player.Runnable = &game.RunnablePlayerMock{}
+		allhands[g.Players[i]] = getHand(hands[i+1])
 	}
 
-	board := NewBoard(g.players)
+	board := NewBoard(g.Players)
 	board.Hands = allhands
 	g.board = board
 
@@ -101,7 +101,7 @@ func TestPassCards(t *testing.T) {
 			t.Errorf("Unexpected error: %s", err)
 		}
 
-		for _, player := range g.players {
+		for _, player := range g.Players {
 			h := getHand(test.expectedHands[player.Position])
 			for i := 1; i < len(*g.board.Hands[player]); i++ {
 				if (*g.board.Hands[player])[i] != (*h)[i] {
@@ -192,7 +192,7 @@ func TestPlayRound(t *testing.T) {
 		}
 
 		for i, score := range test.expectedScores {
-			actualScore := g.board.Scores.Totals[g.players[i]]
+			actualScore := g.board.Scores.Totals[g.Players[i]]
 			if actualScore != score {
 				t.Errorf("Got score %d, expected %d", actualScore, score)
 			}

@@ -9,26 +9,15 @@ import (
 )
 
 type Game struct {
-	game.Game
-	Comms   AIComms
-	players []*Player
-	board   *Board
+	game.Game[*Player]
+	Comms AIComms
+	board *Board
 }
 
 func New() *Game {
-	g := Game{
-		players: []*Player{},
-	}
+	g := Game{}
 	g.Name = game.LiarsDice
-
-	for i := 0; i < g.MetaData().NumPlayers; i++ {
-		p := Player{
-			Player: game.Player{},
-		}
-		g.players = append(g.players, &p)
-	}
-
-	g.reset()
+	g.InitPlayers(NewPlayer)
 	return &g
 }
 
@@ -43,7 +32,7 @@ func (g *Game) Play() error {
 	}
 
 	// Launch the player processes
-	for _, player := range g.players {
+	for _, player := range g.Players {
 		defer player.CleanUp()
 		defer g.SetOutput(player.ID, player)
 
@@ -52,7 +41,7 @@ func (g *Game) Play() error {
 			return fmt.Errorf("player %s failed to run, err: %s", player, err)
 		}
 
-		err = g.Comms.Setup(player, g.players)
+		err = g.Comms.Setup(player, g.Players)
 		if err != nil {
 			return fmt.Errorf("player %s failed to setup, err: %s", player, err)
 		}
@@ -70,7 +59,7 @@ func (g *Game) Play() error {
 
 	playerTurn := 0
 	for !g.gameOver() {
-		player := g.players[playerTurn]
+		player := g.Players[playerTurn]
 		move, err := g.Comms.GetMove(player)
 		if err != nil {
 			g.setLoser(player)
@@ -150,14 +139,14 @@ func (g *Game) Play() error {
 		}
 
 		playerTurn = util.Increment(playerTurn, 0, g.MetaData().NumPlayers-1)
-		for g.board.DiceHidden[g.players[playerTurn]].Count() == 0 {
+		for g.board.DiceHidden[g.Players[playerTurn]].Count() == 0 {
 			// Skip over eliminated players
 			playerTurn = util.Increment(playerTurn, 0, g.MetaData().NumPlayers-1)
 		}
 	}
 
 	// We're done, whoever's left with dice is the winner.
-	for _, p := range g.players {
+	for _, p := range g.Players {
 		if g.board.DiceHidden[p].Count() > 0 {
 			place := game.Place{
 				Player: p.Player,
@@ -172,7 +161,7 @@ func (g *Game) Play() error {
 }
 
 func (g *Game) sendRollEvents() {
-	for _, p := range g.players {
+	for _, p := range g.Players {
 		d := g.board.DiceHidden[p]
 		if d.Count() > 0 {
 			e := EventRoll{
@@ -182,14 +171,6 @@ func (g *Game) sendRollEvents() {
 			g.EventLog.Add(e, []game.PlayerID{p.ID})
 		}
 	}
-}
-
-func (g *Game) Players() []*game.Player {
-	players := []*game.Player{}
-	for _, p := range g.players {
-		players = append(players, &(p.Player))
-	}
-	return players
 }
 
 func (g *Game) Events() []fmt.Stringer {
@@ -225,23 +206,23 @@ func (g *Game) Events() []fmt.Stringer {
 
 func (g *Game) reset() {
 	g.Game.Reset()
-	g.board = NewBoard(g.players)
+	g.board = NewBoard(g.Players)
 	if g.Comms == nil {
 		g.Comms = NewComms(g)
 	}
 }
 
 func (g *Game) shufflePlayers() {
-	util.Shuffle(g.players)
+	util.Shuffle(g.Players)
 
 	for i := 1; i <= 4; i++ {
-		g.players[i-1].Position = i
+		g.Players[i-1].Position = i
 	}
 }
 
 func (g *Game) gameOver() bool {
 	count := 0
-	for _, p := range g.players {
+	for _, p := range g.Players {
 		if g.board.DiceHidden[p].Count() > 0 {
 			count++
 		}
@@ -253,7 +234,7 @@ func (g *Game) gameOver() bool {
 func (g *Game) setLoser(p *Player) {
 	places := []game.Place{}
 
-	for _, player := range g.players {
+	for _, player := range g.Players {
 		rank := 1
 		if player == p {
 			// Last place

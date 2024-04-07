@@ -4,7 +4,7 @@ import "fmt"
 
 type Playable interface {
 	Play() error
-	Players() []*Player
+	GetPlayers() []*Player
 	Events() []fmt.Stringer
 	RawEvents() EventLog
 	Places() []Place

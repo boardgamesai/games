@@ -7,3 +7,13 @@ type Player struct {
 	Order int // 1-based
 	Color SpaceType
 }
+
+func NewPlayer() *Player {
+	return &Player{
+		Player: game.Player{},
+	}
+}
+
+func (p *Player) BasePlayer() *game.Player {
+	return &p.Player
+}

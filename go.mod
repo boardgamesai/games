@@ -1,6 +1,6 @@
 module github.com/boardgamesai/games
 
-go 1.19
+go 1.22
 
 require github.com/pborman/uuid v1.2.0
 

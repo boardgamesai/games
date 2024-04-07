@@ -10,26 +10,15 @@ import (
 )
 
 type Game struct {
-	game.Game
-	Comms   AIComms
-	players []*Player
-	board   *Board
+	game.Game[*Player]
+	Comms AIComms
+	board *Board
 }
 
 func New() *Game {
-	g := Game{
-		players: []*Player{},
-	}
+	g := Game{}
 	g.Name = game.Hearts
-
-	for i := 0; i < g.MetaData().NumPlayers; i++ {
-		p := Player{
-			Player: game.Player{},
-		}
-		g.players = append(g.players, &p)
-	}
-
-	g.reset()
+	g.InitPlayers(NewPlayer)
 	return &g
 }
 
@@ -44,7 +33,7 @@ func (g *Game) Play() error {
 	}
 
 	// Launch the player processes
-	for _, player := range g.players {
+	for _, player := range g.Players {
 		defer player.CleanUp()
 		defer g.SetOutput(player.ID, player)
 
@@ -53,7 +42,7 @@ func (g *Game) Play() error {
 			return fmt.Errorf("player %s failed to run, err: %s", player, err)
 		}
 
-		err = g.Comms.Setup(player, g.players)
+		err = g.Comms.Setup(player, g.Players)
 		if err != nil {
 			return fmt.Errorf("player %s failed to setup, err: %s", player, err)
 		}
@@ -91,14 +80,6 @@ func (g *Game) Play() error {
 	g.SetPlaces(g.board.Scores.Places())
 
 	return nil
-}
-
-func (g *Game) Players() []*game.Player {
-	players := []*game.Player{}
-	for _, p := range g.players {
-		players = append(players, &(p.Player))
-	}
-	return players
 }
 
 func (g *Game) Events() []fmt.Stringer {
@@ -142,7 +123,7 @@ func (g *Game) Events() []fmt.Stringer {
 
 func (g *Game) reset() {
 	g.Game.Reset()
-	g.board = NewBoard(g.players)
+	g.board = NewBoard(g.Players)
 	if g.Comms == nil {
 		g.Comms = NewComms(g)
 	}
@@ -150,7 +131,7 @@ func (g *Game) reset() {
 
 func (g *Game) dealCards() {
 	g.board.Deck.Shuffle()
-	for _, player := range g.players {
+	for _, player := range g.Players {
 		hand := Hand{}
 		for i := 0; i < 13; i++ {
 			hand.Add(g.board.Deck.DealCard())
@@ -170,7 +151,7 @@ func (g *Game) dealCards() {
 func (g *Game) passCards(passDirection PassDirection) (*Player, error) {
 	// First collect all the passes...
 	passes := map[*Player]PassMove{}
-	for _, player := range g.players {
+	for _, player := range g.Players {
 		passMove, err := g.Comms.GetPassMove(player, passDirection)
 		if err != nil {
 			switch e := err.(type) {
@@ -234,7 +215,7 @@ func (g *Game) isValidPass(h *Hand, m PassMove) error {
 
 func (g *Game) getPassRecipient(p *Player, passDirection PassDirection) *Player {
 	playerIndex := -1
-	for i, player := range g.players {
+	for i, player := range g.Players {
 		if player == p {
 			playerIndex = i
 			break
@@ -251,14 +232,14 @@ func (g *Game) getPassRecipient(p *Player, passDirection PassDirection) *Player 
 		addon = 3
 	}
 
-	return g.players[(playerIndex+addon)%4]
+	return g.Players[(playerIndex+addon)%4]
 }
 
 func (g *Game) playRound() (*Player, error) {
 	// To kick off the round, we need to know who has the two of clubs.
 	turn := -1
 
-	for i, player := range g.players {
+	for i, player := range g.Players {
 		for _, c := range *g.board.Hands[player] {
 			if c.Suit == card.Clubs && c.Rank == card.Two {
 				turn = i
@@ -287,10 +268,10 @@ func (g *Game) playRound() (*Player, error) {
 			heartsBroken = true
 		}
 
-		scores[g.players[turn]] += score
+		scores[g.Players[turn]] += score
 
 		if score != 0 && score != -10 {
-			tookPoints[g.players[turn]] = true
+			tookPoints[g.Players[turn]] = true
 		}
 	}
 
@@ -302,7 +283,7 @@ func (g *Game) playRound() (*Player, error) {
 			moonshotter = player
 		}
 
-		for _, player := range g.players {
+		for _, player := range g.Players {
 			if player == moonshotter {
 				scores[player] -= 26
 			} else {
@@ -334,7 +315,7 @@ func (g *Game) playRound() (*Player, error) {
 
 func (g *Game) getPlayersMap() map[game.PlayerID]int {
 	m := map[game.PlayerID]int{}
-	for _, player := range g.players {
+	for _, player := range g.Players {
 		m[player.ID] = 0
 	}
 	return m
@@ -347,7 +328,7 @@ func (g *Game) playTrick(turn int, trickCount int, heartsBroken bool) (int, int,
 
 	// Collect a play from each player
 	for i := 0; i < 4; i++ {
-		player := g.players[turn]
+		player := g.Players[turn]
 		move, err := g.Comms.GetPlayMove(player, trick)
 		if err != nil {
 			switch e := err.(type) {
@@ -446,10 +427,10 @@ func (g *Game) evaluateTrick(trick []card.Card) (card.Card, int) {
 }
 
 func (g *Game) shufflePlayers() {
-	util.Shuffle(g.players)
+	util.Shuffle(g.Players)
 
 	for i := 1; i <= 4; i++ {
-		g.players[i-1].Position = i
+		g.Players[i-1].Position = i
 	}
 }
 
@@ -466,7 +447,7 @@ func (g *Game) gameOver() bool {
 func (g *Game) setLoser(p *Player) {
 	places := []game.Place{}
 
-	for _, player := range g.players {
+	for _, player := range g.Players {
 		rank := 1
 		if player == p {
 			// Last place
