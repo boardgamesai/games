@@ -55,7 +55,7 @@ func TestAddNonEvent(t *testing.T) {
 	err := l.AddAll(r)
 	if err == nil {
 		t.Errorf("Expected error adding non-event, didn't get one")
-	} else if !strings.Contains(err.Error(), "Invalid type") {
+	} else if !strings.Contains(err.Error(), "invalid type") {
 		t.Errorf("Didn't find expected error, instead got error: %s", err)
 	}
 }
