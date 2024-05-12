@@ -9,9 +9,7 @@ import (
 )
 
 type Game struct {
-	game.Game[*Player]
-	Comms AIComms
-	board *Board
+	game.Game[*Player, *Board, AIComms]
 }
 
 func New() *Game {
@@ -63,7 +61,7 @@ func (g *Game) Play() error {
 
 	// Game is over when someone wins or board is filled
 	playerTurn := 0
-	for !g.board.IsFull() {
+	for !g.Board.IsFull() {
 		player := g.Players[playerTurn]
 		move, err := g.Comms.GetMove(player)
 		if err != nil {
@@ -79,14 +77,14 @@ func (g *Game) Play() error {
 			return err
 		}
 
-		err = g.board.ApplyMove(player.Symbol, move)
+		err = g.Board.ApplyMove(player.Symbol, move)
 
 		// Regardless of whether the move was valid or not, we add it to the log
 		e := EventMove{
 			ID:   player.ID,
 			Move: move,
 		}
-		hasWinner, winMoves := g.board.HasWinner()
+		hasWinner, winMoves := g.Board.HasWinner()
 		if hasWinner {
 			e.WinMoves = winMoves
 		}
@@ -145,7 +143,7 @@ func (g *Game) Events() []fmt.Stringer {
 
 func (g *Game) reset() {
 	g.Game.Reset()
-	g.board = &Board{}
+	g.Board = &Board{}
 	if g.Comms == nil {
 		g.Comms = NewComms(g)
 	}
@@ -187,5 +185,5 @@ func (g *Game) otherPlayer(player *Player) *Player {
 }
 
 func (g *Game) String() string {
-	return g.board.String()
+	return g.Board.String()
 }

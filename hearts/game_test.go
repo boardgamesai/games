@@ -23,7 +23,7 @@ func getGame(hands map[int][]string) *Game {
 
 	board := NewBoard(g.Players)
 	board.Hands = allhands
-	g.board = board
+	g.Board = board
 
 	g.Comms = &CommsMock{
 		hands: hands,
@@ -103,9 +103,9 @@ func TestPassCards(t *testing.T) {
 
 		for _, player := range g.Players {
 			h := getHand(test.expectedHands[player.Position])
-			for i := 1; i < len(*g.board.Hands[player]); i++ {
-				if (*g.board.Hands[player])[i] != (*h)[i] {
-					t.Errorf("expected hand: %s got: %s for player %s", h, g.board.Hands[player], player)
+			for i := 1; i < len(*g.Board.Hands[player]); i++ {
+				if (*g.Board.Hands[player])[i] != (*h)[i] {
+					t.Errorf("expected hand: %s got: %s for player %s", h, g.Board.Hands[player], player)
 					break
 				}
 			}
@@ -192,7 +192,7 @@ func TestPlayRound(t *testing.T) {
 		}
 
 		for i, score := range test.expectedScores {
-			actualScore := g.board.Scores.Totals[g.Players[i]]
+			actualScore := g.Board.Scores.Totals[g.Players[i]]
 			if actualScore != score {
 				t.Errorf("Got score %d, expected %d", actualScore, score)
 			}

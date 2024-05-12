@@ -9,9 +9,7 @@ import (
 )
 
 type Game struct {
-	game.Game[*Player]
-	Comms AIComms
-	board *Board
+	game.Game[*Player, *Board, AIComms]
 }
 
 func New() *Game {
@@ -65,7 +63,7 @@ func (g *Game) Play() error {
 	playerTurn := 0
 	for {
 		player := g.Players[playerTurn]
-		if !g.board.CanMove(player.Color) {
+		if !g.Board.CanMove(player.Color) {
 			break // Someone can't move, game over
 		}
 
@@ -83,7 +81,7 @@ func (g *Game) Play() error {
 			return err
 		}
 
-		err = g.board.ApplyMove(player.Color, move)
+		err = g.Board.ApplyMove(player.Color, move)
 
 		e := EventMove{
 			ID:   player.ID,
@@ -134,7 +132,7 @@ func (g *Game) Events() []fmt.Stringer {
 
 func (g *Game) reset() {
 	g.Game.Reset()
-	g.board = NewBoard()
+	g.Board = NewBoard()
 	if g.Comms == nil {
 		g.Comms = NewComms(g)
 	}
@@ -166,5 +164,5 @@ func (g *Game) otherPlayer(player *Player) *Player {
 }
 
 func (g *Game) String() string {
-	return g.board.String()
+	return g.Board.String()
 }

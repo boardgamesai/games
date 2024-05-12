@@ -9,9 +9,7 @@ import (
 )
 
 type Game struct {
-	game.Game[*Player]
-	Comms AIComms
-	board *Board
+	game.Game[*Player, *Board, AIComms]
 }
 
 func New() *Game {
@@ -63,7 +61,7 @@ func (g *Game) Play() error {
 
 	// Game is over when board is filled or no one has moves left
 	playerTurn := 0
-	for !g.board.IsFull() {
+	for !g.Board.IsFull() {
 		player := g.Players[playerTurn]
 		move, err := g.Comms.GetMove(player)
 		if err != nil {
@@ -79,13 +77,13 @@ func (g *Game) Play() error {
 			return err
 		}
 
-		flips, err := g.board.ApplyMove(player.Disc, move)
+		flips, err := g.Board.ApplyMove(player.Disc, move)
 
 		e := EventMove{
 			ID:    player.ID,
 			Move:  move,
 			Flips: flips,
-			Score: g.board.Score(),
+			Score: g.Board.Score(),
 		}
 		g.EventLog.AddAll(e)
 
@@ -99,17 +97,17 @@ func (g *Game) Play() error {
 		}
 
 		playerTurn = util.Increment(playerTurn, 0, 1)
-		if len(g.board.PossibleMoves(g.Players[playerTurn].Disc)) == 0 {
+		if len(g.Board.PossibleMoves(g.Players[playerTurn].Disc)) == 0 {
 			// No moves left for this player, skip them
 			playerTurn = util.Increment(playerTurn, 0, 1)
-			if len(g.board.PossibleMoves(g.Players[playerTurn].Disc)) == 0 {
+			if len(g.Board.PossibleMoves(g.Players[playerTurn].Disc)) == 0 {
 				// No moves left for this player either! Game is over.
 				break
 			}
 		}
 	}
 
-	score := g.board.Score()
+	score := g.Board.Score()
 	var winner *Player
 	if score[Black] > score[White] {
 		winner = g.playerDisc(Black)
@@ -146,7 +144,7 @@ func (g *Game) Events() []fmt.Stringer {
 
 func (g *Game) reset() {
 	g.Game.Reset()
-	g.board = NewBoard()
+	g.Board = NewBoard()
 	if g.Comms == nil {
 		g.Comms = NewComms(g)
 	}
@@ -154,7 +152,7 @@ func (g *Game) reset() {
 
 func (g *Game) setWinner(p *Player) {
 	var places []game.Place
-	scores := g.board.Score()
+	scores := g.Board.Score()
 
 	if p == nil {
 		player1 := g.Players[0]
@@ -201,5 +199,5 @@ func (g *Game) playerDisc(d Disc) *Player {
 }
 
 func (g *Game) String() string {
-	return g.board.String()
+	return g.Board.String()
 }

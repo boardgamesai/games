@@ -9,9 +9,7 @@ import (
 )
 
 type Game struct {
-	game.Game[*Player]
-	Comms AIComms
-	board *Board
+	game.Game[*Player, *Board, AIComms]
 }
 
 func New() *Game {
@@ -74,7 +72,7 @@ func (g *Game) Play() error {
 			return err
 		}
 
-		err = g.board.ApplyMove(move, player)
+		err = g.Board.ApplyMove(move, player)
 		if err != nil {
 			g.setLoser(player)
 			return game.DQError{
@@ -97,7 +95,7 @@ func (g *Game) Play() error {
 			if len(move.ShowDice) > 0 {
 				e := EventRoll{
 					ID:   player.ID,
-					Dice: g.board.DiceHidden[player].Values,
+					Dice: g.Board.DiceHidden[player].Values,
 				}
 				g.EventLog.Add(e, []game.PlayerID{player.ID})
 			}
@@ -106,18 +104,18 @@ func (g *Game) Play() error {
 			var eliminated *Player
 
 			changes := map[game.PlayerID]int{}
-			for p, change := range g.board.Outcome.DiceChanges {
+			for p, change := range g.Board.Outcome.DiceChanges {
 				changes[p.ID] = change
 
 				// Did a player just get eliminated?
-				if change < 0 && g.board.DiceHidden[p].Count() == 0 {
+				if change < 0 && g.Board.DiceHidden[p].Count() == 0 {
 					eliminated = p
 				}
 			}
 			e := EventChallenge{
 				ID:             player.ID,
-				Bid:            g.board.Outcome.Bid,
-				ActualQuantity: g.board.Outcome.ActualQuantity,
+				Bid:            g.Board.Outcome.Bid,
+				ActualQuantity: g.Board.Outcome.ActualQuantity,
 				DiceChange:     changes,
 			}
 			if eliminated != nil {
@@ -139,7 +137,7 @@ func (g *Game) Play() error {
 		}
 
 		playerTurn = util.Increment(playerTurn, 0, g.MetaData().NumPlayers-1)
-		for g.board.DiceHidden[g.Players[playerTurn]].Count() == 0 {
+		for g.Board.DiceHidden[g.Players[playerTurn]].Count() == 0 {
 			// Skip over eliminated players
 			playerTurn = util.Increment(playerTurn, 0, g.MetaData().NumPlayers-1)
 		}
@@ -147,7 +145,7 @@ func (g *Game) Play() error {
 
 	// We're done, whoever's left with dice is the winner.
 	for _, p := range g.Players {
-		if g.board.DiceHidden[p].Count() > 0 {
+		if g.Board.DiceHidden[p].Count() > 0 {
 			place := game.Place{
 				Player: p.Player,
 				Rank:   1,
@@ -162,7 +160,7 @@ func (g *Game) Play() error {
 
 func (g *Game) sendRollEvents() {
 	for _, p := range g.Players {
-		d := g.board.DiceHidden[p]
+		d := g.Board.DiceHidden[p]
 		if d.Count() > 0 {
 			e := EventRoll{
 				ID:   p.ID,
@@ -206,7 +204,7 @@ func (g *Game) Events() []fmt.Stringer {
 
 func (g *Game) reset() {
 	g.Game.Reset()
-	g.board = NewBoard(g.Players)
+	g.Board = NewBoard(g.Players)
 	if g.Comms == nil {
 		g.Comms = NewComms(g)
 	}
@@ -223,7 +221,7 @@ func (g *Game) shufflePlayers() {
 func (g *Game) gameOver() bool {
 	count := 0
 	for _, p := range g.Players {
-		if g.board.DiceHidden[p].Count() > 0 {
+		if g.Board.DiceHidden[p].Count() > 0 {
 			count++
 		}
 	}

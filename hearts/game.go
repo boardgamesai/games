@@ -10,9 +10,7 @@ import (
 )
 
 type Game struct {
-	game.Game[*Player]
-	Comms AIComms
-	board *Board
+	game.Game[*Player, *Board, AIComms]
 }
 
 func New() *Game {
@@ -77,7 +75,7 @@ func (g *Game) Play() error {
 	}
 
 	// We're done, set the places for each player.
-	g.SetPlaces(g.board.Scores.Places())
+	g.SetPlaces(g.Board.Scores.Places())
 
 	return nil
 }
@@ -123,22 +121,22 @@ func (g *Game) Events() []fmt.Stringer {
 
 func (g *Game) reset() {
 	g.Game.Reset()
-	g.board = NewBoard(g.Players)
+	g.Board = NewBoard(g.Players)
 	if g.Comms == nil {
 		g.Comms = NewComms(g)
 	}
 }
 
 func (g *Game) dealCards() {
-	g.board.Deck.Shuffle()
+	g.Board.Deck.Shuffle()
 	for _, player := range g.Players {
 		hand := Hand{}
 		for i := 0; i < 13; i++ {
-			hand.Add(g.board.Deck.DealCard())
+			hand.Add(g.Board.Deck.DealCard())
 		}
 
 		hand.Sort()
-		g.board.Hands[player] = &hand
+		g.Board.Hands[player] = &hand
 
 		e := EventDeal{
 			ID:   player.ID,
@@ -163,7 +161,7 @@ func (g *Game) passCards(passDirection PassDirection) (*Player, error) {
 			return player, err
 		}
 
-		err = g.isValidPass(g.board.Hands[player], passMove)
+		err = g.isValidPass(g.Board.Hands[player], passMove)
 		if err != nil {
 			// Make sure to log the bad pass before we bomb out
 			g.logPassMove(player, g.getPassRecipient(player, passDirection), passMove.Cards)
@@ -183,10 +181,10 @@ func (g *Game) passCards(passDirection PassDirection) (*Player, error) {
 	for passer, passMove := range passes {
 		recipient := g.getPassRecipient(passer, passDirection)
 		for _, card := range passMove.Cards {
-			g.board.Hands[passer].Remove(card) // Remove the card from the passer's hand,
-			g.board.Hands[recipient].Add(card) // and add it to the recipient's hand.
+			g.Board.Hands[passer].Remove(card) // Remove the card from the passer's hand,
+			g.Board.Hands[recipient].Add(card) // and add it to the recipient's hand.
 		}
-		g.board.Hands[recipient].Sort()
+		g.Board.Hands[recipient].Sort()
 		g.logPassMove(passer, recipient, passMove.Cards)
 	}
 
@@ -240,7 +238,7 @@ func (g *Game) playRound() (*Player, error) {
 	turn := -1
 
 	for i, player := range g.Players {
-		for _, c := range *g.board.Hands[player] {
+		for _, c := range *g.Board.Hands[player] {
 			if c.Suit == card.Clubs && c.Rank == card.Two {
 				turn = i
 				break
@@ -292,7 +290,7 @@ func (g *Game) playRound() (*Player, error) {
 		}
 	}
 
-	g.board.Scores.AddRound(scores)
+	g.Board.Scores.AddRound(scores)
 
 	eventScores := g.getPlayersMap()
 	for player, score := range scores {
@@ -300,7 +298,7 @@ func (g *Game) playRound() (*Player, error) {
 	}
 
 	totalScores := g.getPlayersMap()
-	for player, score := range g.board.Scores.Totals {
+	for player, score := range g.Board.Scores.Totals {
 		totalScores[player.ID] = score
 	}
 
@@ -340,7 +338,7 @@ func (g *Game) playTrick(turn int, trickCount int, heartsBroken bool) (int, int,
 			return -1, -1, player, err
 		}
 
-		err = g.isValidPlay(*g.board.Hands[player], move, trick, trickCount, heartsBroken)
+		err = g.isValidPlay(*g.Board.Hands[player], move, trick, trickCount, heartsBroken)
 		if err != nil {
 			// Make sure to log the bad play before we bomb out
 			g.logPlayMove(player, move.Card)
@@ -353,7 +351,7 @@ func (g *Game) playTrick(turn int, trickCount int, heartsBroken bool) (int, int,
 		}
 
 		trick = append(trick, move.Card)
-		g.board.Hands[player].Remove(move.Card)
+		g.Board.Hands[player].Remove(move.Card)
 		plays[move.Card] = player.ID
 		turns[move.Card] = turn
 		turn = util.Increment(turn, 0, 3)
@@ -435,7 +433,7 @@ func (g *Game) shufflePlayers() {
 }
 
 func (g *Game) gameOver() bool {
-	for _, total := range g.board.Scores.Totals {
+	for _, total := range g.Board.Scores.Totals {
 		if total >= 100 {
 			return true
 		}
@@ -457,7 +455,7 @@ func (g *Game) setLoser(p *Player) {
 		places = append(places, game.Place{
 			Player: player.Player,
 			Rank:   rank,
-			Score:  g.board.Scores.Totals[player],
+			Score:  g.Board.Scores.Totals[player],
 		})
 	}
 
